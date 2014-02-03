@@ -41,10 +41,13 @@ public class ROCHE : EditorWindow
 	// UI variables
 	enum TOOLBAR_POS
 	{
-		PROJECT = 0,
-		SCENE = 1,
-		LIGHTING = 2,
-		EXPORT = 3
+		//PROJECT = 0,
+		//SCENE = 1,
+		//LIGHTING = 2,
+		//EXPORT = 3,
+		DESIGN = 0,
+		APP = 1,
+		EXPORT = 2
 	};
 	
 	enum PLATFORM_SELECTED
@@ -55,7 +58,7 @@ public class ROCHE : EditorWindow
 	
 	private TOOLBAR_POS	toolbarPos;
 	private Vector2 	scrollPos = Vector2.zero;
-	private string[] 	toolbarStrings = new string[] { "PROYECTO", "ESCENA", "ILUMINACIÓN", "EXPORTADO" };
+	private string[] 	toolbarStrings = new string[] { "DISEÑO", "APP", "EXPORTADO" };
 	
 	// Collision Detection variables
 	private bool 		viewCollisions = false;
@@ -80,10 +83,10 @@ public class ROCHE : EditorWindow
 			GameObject.DestroyImmediate(gameObj);
 		
 		// Instantiate the ROCHE main GameObject
-		GameObject g_roche = GameObject.Instantiate((GameObject) Resources.Load("ROCHE/_ROCHE",typeof(GameObject))) as GameObject;
-		g_roche.layer = LayerMask.NameToLayer("ROCHE");
-		g_roche.name = "_ROCHE";
-		g_roche.transform.position = Vector3.zero;
+		//GameObject g_roche = GameObject.Instantiate((GameObject) Resources.Load("ROCHE/_ROCHE",typeof(GameObject))) as GameObject;
+		//g_roche.layer = LayerMask.NameToLayer("ROCHE");
+		//g_roche.name = "_ROCHE";
+		//g_roche.transform.position = Vector3.zero;
 		
 		// Set Skybox
 		RenderSettings.skybox = (Material) Resources.Load ("ROCHE/Assets/Skybox",typeof(Material)) as Material;
@@ -114,7 +117,6 @@ public class ROCHE : EditorWindow
 		BLightIconOne = (Texture2D)Resources.Load ("ROCHE/Assets/BLT", typeof(Texture2D));
 		BLightIconThree = (Texture2D)Resources.Load ("ROCHE/Assets/3BLT", typeof(Texture2D));
 		BLightIconFive = (Texture2D)Resources.Load ("ROCHE/Assets/5BLT", typeof(Texture2D));
-		
 		
 		// Set Max Quality Settings
 		QualitySettings.SetQualityLevel(QualitySettings.names.Length-3,true);
@@ -149,29 +151,44 @@ public class ROCHE : EditorWindow
 		}
 		
 		// If we have no building GameObject on scene, just show the "ESCENA" tab.
+		if (sceneBuilding == null) sceneBuilding = GameObject.Find("Edificio") as GameObject;
 		if(sceneBuilding == null) 
 		{
-			SceneTab();
+			TabStart();
 			return;
 		}
-		
-		// If we have a building, show the toolbar
-		toolbarPos = (TOOLBAR_POS) GUILayout.SelectionGrid ((int) toolbarPos, toolbarStrings,2);
+
+		toolbarPos = (TOOLBAR_POS) GUILayout.SelectionGrid ((int) toolbarPos, toolbarStrings,3);
 		switch (toolbarPos) 
 		{
-		case TOOLBAR_POS.PROJECT:
-			ProjectTab ();
+		case TOOLBAR_POS.DESIGN:
+			TabDesign();
 			break;
-		case TOOLBAR_POS.SCENE:
-			SceneTab ();
-			break;
-		case TOOLBAR_POS.LIGHTING:
-			LightingTab ();
+		case TOOLBAR_POS.APP:
+			TabApp();
 			break;
 		case TOOLBAR_POS.EXPORT:
-			ExportTab ();
+			TabExport();
 			break;
 		}
+		
+//		// If we have a building, show the toolbar
+//		toolbarPos = (TOOLBAR_POS) GUILayout.SelectionGrid ((int) toolbarPos, toolbarStrings,2);
+//		switch (toolbarPos) 
+//		{
+//		case TOOLBAR_POS.PROJECT:
+//			ProjectTab ();
+//			break;
+//		case TOOLBAR_POS.SCENE:
+//			SceneTab ();
+//			break;
+//		case TOOLBAR_POS.LIGHTING:
+//			LightingTab ();
+//			break;
+//		case TOOLBAR_POS.EXPORT:
+//			ExportTab ();
+//			break;
+//		}
 	}
 	
 	// Update function called each frame on the Unity Editor
@@ -181,18 +198,18 @@ public class ROCHE : EditorWindow
 		Repaint();
 		
 		// Locate main Framework GameObjects
-		GameObject _ROCHE = GameObject.Find("_ROCHE");
-		if (!_ROCHE) 
-		{
-			_ROCHE = GameObject.Instantiate((GameObject) Resources.Load("ROCHE/_ROCHE",typeof(GameObject))) as GameObject;
-			SetLayerRecursively(_ROCHE,"ROCHE");
-			_ROCHE.name = "_ROCHE";
-			_ROCHE.transform.position = Vector3.zero;	
-		}
+//		GameObject _ROCHE = GameObject.Find("_ROCHE");
+//		if (!_ROCHE) 
+//		{
+//			_ROCHE = GameObject.Instantiate((GameObject) Resources.Load("ROCHE/_ROCHE",typeof(GameObject))) as GameObject;
+//			SetLayerRecursively(_ROCHE,"ROCHE");
+//			_ROCHE.name = "_ROCHE";
+//			_ROCHE.transform.position = Vector3.zero;	
+//		}
 
-		Vector3 rPos = _ROCHE.transform.position;
-		rPos.y = 1.5f;
-		_ROCHE.transform.position = rPos;	
+//		Vector3 rPos = _ROCHE.transform.position;
+//		rPos.y = 1.5f;
+//		_ROCHE.transform.position = rPos;	
 
 		// Instantiate them if we can't locate them
 		furnitureContainer = GameObject.Find("Mobiliario");
@@ -203,7 +220,7 @@ public class ROCHE : EditorWindow
 			furnitureContainer.layer = LayerMask.NameToLayer("ROCHE");
 			furnitureContainer.transform.position = Vector3.zero;
 		}
-		
+
 		lightContainer = GameObject.Find("Luces");
 		if (!lightContainer)
 		{
@@ -211,7 +228,7 @@ public class ROCHE : EditorWindow
 			lightContainer.layer = LayerMask.NameToLayer("ROCHE");
 			lightContainer.transform.position = Vector3.zero;
 		}
-		
+
 		// Locate the Building GameObject so the Inspector window can modify the shown contents
 		sceneBuilding = GameObject.Find("Edificio");
 		// Reposition
@@ -219,7 +236,7 @@ public class ROCHE : EditorWindow
 		{
 			sceneBuilding.transform.position = new Vector3(0,0,0);
 		}
-		
+
 		// Manage new GameObjects
 		GameObject currentGameObject = Selection.activeGameObject;
 		if (currentGameObject != null && currentGameObject.activeInHierarchy)
@@ -258,129 +275,133 @@ public class ROCHE : EditorWindow
 		ViewObjectCollisions();
 	}
 	
-	// "Proyecto" tab contents
-	private void ProjectTab ()
-	{
-		// Vertical Scrollbar
-		scrollPos = EditorGUILayout.BeginScrollView (scrollPos);
-		
-		// ROCHE Header Icon
-		DrawRocheIconBox();		
-		
-		// "EDIFICIO" Box
-		EditorGUILayout.BeginVertical ("Box");
-		EditorGUILayout.LabelField ("1 - INFORMACIÓN", EditorStyles.boldLabel);
-		
+//	// "Proyecto" tab contents
+//	private void ProjectTab ()
+//	{
+//		// Vertical Scrollbar
+//		scrollPos = EditorGUILayout.BeginScrollView (scrollPos);
+//		
+//		// ROCHE Header Icon
+//		DrawRocheIconBox();		
+//		
+//		// "EDIFICIO" Box
+//		EditorGUILayout.BeginVertical ("Box");
+//		EditorGUILayout.LabelField ("1 - INFORMACIÓN", EditorStyles.boldLabel);
+//		
+////		EditorGUILayout.BeginHorizontal();
+////		GUILayout.Space(20);
+////		EditorGUILayout.LabelField ("Nombre del Projecto:", EditorStyles.boldLabel);
+////		GUILayout.Space(20);
+////		EditorGUILayout.EndHorizontal ();
+//		
+////		EditorGUILayout.BeginHorizontal();
+////		GUILayout.Space(40);
+////		PlayerSettings.productName = GUILayout.TextField(PlayerSettings.productName, EditorStyles.textField, GUILayout.MinHeight(20), GUILayout.MinWidth(60));
+////		GUILayout.Space (20);
+////		EditorGUILayout.EndHorizontal();
+//		
+//
+//
+//		
+//		GameObject GUIClient = GameObject.Find("GUI_Client");
+//		if (GUIClient != null) 
+//		{
+//			EditorGUILayout.BeginHorizontal();
+//			GUILayout.Space(20);
+//			EditorGUILayout.LabelField ("Nombre del Cliente:", EditorStyles.boldLabel);
+//			GUILayout.Space(20);
+//			EditorGUILayout.EndHorizontal ();
+//			EditorGUILayout.BeginHorizontal();
+//			GUILayout.Space(40);
+//			MMCGUIClient gClient = GUIClient.GetComponent<MMCGUIClient>();
+//			gClient.text = GUILayout.TextArea(gClient.text, 32, GUILayout.MinHeight(20), GUILayout.MinWidth(60));
+//			GameObject GUIClientLauncher = GameObject.Find("GUI_Client_Launcher");
+//			if (GUIClientLauncher != null) 
+//			{
+//				MMCGUILabel gClientLauncher = GameObject.Find("GUI_Client_Launcher").GetComponent<MMCGUILabel>();
+//				gClientLauncher.text = gClient.text;
+//				EditorUtility.SetDirty(gClientLauncher);
+//			}
+//			PlayerPrefs.SetString("client",gClient.text);
+//			GUILayout.Space (20);
+//			EditorGUILayout.EndHorizontal();
+//			EditorGUILayout.BeginHorizontal();
+//			GUILayout.Space(20);
+//			EditorGUILayout.LabelField ("Logo del Cliente (128x64px):", EditorStyles.boldLabel);
+//			GUILayout.Space(20);
+//			EditorGUILayout.EndHorizontal ();
+//			
+//			EditorGUILayout.BeginHorizontal();
+//			GUILayout.Space(40);
+//			
+//			gClient.texture = EditorGUILayout.ObjectField(gClient.texture,
+//	                typeof(Texture2D), false, GUILayout.Width(80), GUILayout.Height(80)) as Texture2D;
+//			GUILayout.Space (20);
+//			EditorGUILayout.EndHorizontal();
+//			
+//			GUILayout.Space(5);
+//			
+//			EditorUtility.SetDirty(gClient);
+//			
+//		}
+//
+//
+//		
 //		EditorGUILayout.BeginHorizontal();
 //		GUILayout.Space(20);
-//		EditorGUILayout.LabelField ("Nombre del Projecto:", EditorStyles.boldLabel);
+//		EditorGUILayout.LabelField ("Texto de Versión:", EditorStyles.boldLabel);
 //		GUILayout.Space(20);
 //		EditorGUILayout.EndHorizontal ();
-		
+//		
 //		EditorGUILayout.BeginHorizontal();
 //		GUILayout.Space(40);
-//		PlayerSettings.productName = GUILayout.TextField(PlayerSettings.productName, EditorStyles.textField, GUILayout.MinHeight(20), GUILayout.MinWidth(60));
+//		MMCGUILabel versionTextLabel = GameObject.Find("GUI_Version").GetComponent<MMCGUILabel>();
+//		versionTextLabel.text = GUILayout.TextField(versionTextLabel.text, 13, EditorStyles.textField, GUILayout.MinHeight(20), GUILayout.MinWidth(60));
+//		MMCGUILabel versionLauncherTextLabel = GameObject.Find("GUI_Version_Launcher").GetComponent<MMCGUILabel>();
+//		versionLauncherTextLabel.text = versionTextLabel.text;
 //		GUILayout.Space (20);
 //		EditorGUILayout.EndHorizontal();
-		
+//		EditorUtility.SetDirty(versionTextLabel);
+//		
+//		EditorGUILayout.BeginHorizontal();
+//		GUILayout.Space(20);
+//		EditorGUILayout.LabelField ("Detalles del Projecto:", EditorStyles.boldLabel);
+//		GUILayout.Space(20);
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		EditorGUILayout.BeginHorizontal();
+//		GUILayout.Space(40);
+//		MMCGUIAction_HelpScreen projDetails = GameObject.Find("GUI_Help_h").GetComponent<MMCGUIAction_HelpScreen>();
+//		projDetails.detallesProjecto.text = EditorGUILayout.TextArea(projDetails.detallesProjecto.text, EditorStyles.textField, GUILayout.MinHeight(20), GUILayout.MinWidth(60));
+//		GUILayout.Space (20);
+//		EditorGUILayout.EndHorizontal();
+//		EditorUtility.SetDirty(projDetails.detallesProjecto);
+//		
+//		EditorGUILayout.BeginHorizontal();
+//		GUILayout.Space(20);
+//		EditorGUILayout.LabelField ("¿Mostrar Pantalla de Carga?", EditorStyles.boldLabel);
+//		GUILayout.Space(20);
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		EditorGUILayout.BeginHorizontal();
+//		GUILayout.Space(40);
+//		ROCHEScript rScript = GameObject.Find("_ROCHE").GetComponent<ROCHEScript>();
+//		rScript.showLoading = EditorGUILayout.Toggle("Mostrar", rScript.showLoading, EditorStyles.toggle, GUILayout.MinHeight(20), GUILayout.MinWidth(60));
+//		GUILayout.Space (20);
+//		EditorGUILayout.EndHorizontal();
+//		EditorUtility.SetDirty(rScript);
+//		
+//		GUILayout.Space(10);
+//		EditorGUILayout.EndVertical ();
+//		EditorGUILayout.EndScrollView ();
+//	}
 
+	#region Start Tab
 
-		
-		GameObject GUIClient = GameObject.Find("GUI_Client");
-		if (GUIClient != null) 
-		{
-			EditorGUILayout.BeginHorizontal();
-			GUILayout.Space(20);
-			EditorGUILayout.LabelField ("Nombre del Cliente:", EditorStyles.boldLabel);
-			GUILayout.Space(20);
-			EditorGUILayout.EndHorizontal ();
-			EditorGUILayout.BeginHorizontal();
-			GUILayout.Space(40);
-			MMCGUIClient gClient = GUIClient.GetComponent<MMCGUIClient>();
-			gClient.text = GUILayout.TextArea(gClient.text, 32, GUILayout.MinHeight(20), GUILayout.MinWidth(60));
-			GameObject GUIClientLauncher = GameObject.Find("GUI_Client_Launcher");
-			if (GUIClientLauncher != null) 
-			{
-				MMCGUILabel gClientLauncher = GameObject.Find("GUI_Client_Launcher").GetComponent<MMCGUILabel>();
-				gClientLauncher.text = gClient.text;
-				EditorUtility.SetDirty(gClientLauncher);
-			}
-			PlayerPrefs.SetString("client",gClient.text);
-			GUILayout.Space (20);
-			EditorGUILayout.EndHorizontal();
-			EditorGUILayout.BeginHorizontal();
-			GUILayout.Space(20);
-			EditorGUILayout.LabelField ("Logo del Cliente (128x64px):", EditorStyles.boldLabel);
-			GUILayout.Space(20);
-			EditorGUILayout.EndHorizontal ();
-			
-			EditorGUILayout.BeginHorizontal();
-			GUILayout.Space(40);
-			
-			gClient.texture = EditorGUILayout.ObjectField(gClient.texture,
-	                typeof(Texture2D), false, GUILayout.Width(80), GUILayout.Height(80)) as Texture2D;
-			GUILayout.Space (20);
-			EditorGUILayout.EndHorizontal();
-			
-			GUILayout.Space(5);
-			
-			EditorUtility.SetDirty(gClient);
-			
-		}
-
-
-		
-		EditorGUILayout.BeginHorizontal();
-		GUILayout.Space(20);
-		EditorGUILayout.LabelField ("Texto de Versión:", EditorStyles.boldLabel);
-		GUILayout.Space(20);
-		EditorGUILayout.EndHorizontal ();
-		
-		EditorGUILayout.BeginHorizontal();
-		GUILayout.Space(40);
-		MMCGUILabel versionTextLabel = GameObject.Find("GUI_Version").GetComponent<MMCGUILabel>();
-		versionTextLabel.text = GUILayout.TextField(versionTextLabel.text, 13, EditorStyles.textField, GUILayout.MinHeight(20), GUILayout.MinWidth(60));
-		MMCGUILabel versionLauncherTextLabel = GameObject.Find("GUI_Version_Launcher").GetComponent<MMCGUILabel>();
-		versionLauncherTextLabel.text = versionTextLabel.text;
-		GUILayout.Space (20);
-		EditorGUILayout.EndHorizontal();
-		EditorUtility.SetDirty(versionTextLabel);
-		
-		EditorGUILayout.BeginHorizontal();
-		GUILayout.Space(20);
-		EditorGUILayout.LabelField ("Detalles del Projecto:", EditorStyles.boldLabel);
-		GUILayout.Space(20);
-		EditorGUILayout.EndHorizontal ();
-		
-		EditorGUILayout.BeginHorizontal();
-		GUILayout.Space(40);
-		MMCGUIAction_HelpScreen projDetails = GameObject.Find("GUI_Help_h").GetComponent<MMCGUIAction_HelpScreen>();
-		projDetails.detallesProjecto.text = EditorGUILayout.TextArea(projDetails.detallesProjecto.text, EditorStyles.textField, GUILayout.MinHeight(20), GUILayout.MinWidth(60));
-		GUILayout.Space (20);
-		EditorGUILayout.EndHorizontal();
-		EditorUtility.SetDirty(projDetails.detallesProjecto);
-		
-		EditorGUILayout.BeginHorizontal();
-		GUILayout.Space(20);
-		EditorGUILayout.LabelField ("¿Mostrar Pantalla de Carga?", EditorStyles.boldLabel);
-		GUILayout.Space(20);
-		EditorGUILayout.EndHorizontal ();
-		
-		EditorGUILayout.BeginHorizontal();
-		GUILayout.Space(40);
-		ROCHEScript rScript = GameObject.Find("_ROCHE").GetComponent<ROCHEScript>();
-		rScript.showLoading = EditorGUILayout.Toggle("Mostrar", rScript.showLoading, EditorStyles.toggle, GUILayout.MinHeight(20), GUILayout.MinWidth(60));
-		GUILayout.Space (20);
-		EditorGUILayout.EndHorizontal();
-		EditorUtility.SetDirty(rScript);
-		
-		GUILayout.Space(10);
-		EditorGUILayout.EndVertical ();
-		EditorGUILayout.EndScrollView ();
-	}
-	
-	// "Escena" tab contents
-	private void SceneTab ()
+	/// <summary>
+	/// Introduction Tab to import the building.
+	/// </summary>
+	private void TabStart()
 	{
 		// Vertical Scrollbar
 		scrollPos = EditorGUILayout.BeginScrollView (scrollPos);
@@ -390,318 +411,239 @@ public class ROCHE : EditorWindow
 		
 		// "EDIFICIO" Box
 		EditorGUILayout.BeginVertical ("Box");
-		EditorGUILayout.LabelField ("1 - EDIFICIO", EditorStyles.boldLabel);
-		
-		// If there's no Building GameObject on scene, ask to import it
-		if (sceneBuilding == null) 
-		{
-			GUILayout.BeginHorizontal ();
-			GUILayout.Space (20);
-			GUILayout.TextArea ("1.1 - Importación de FBX",EditorStyles.boldLabel);
-			GUILayout.Space (10);
-			EditorGUILayout.EndHorizontal ();
-			
-			EditorGUILayout.BeginHorizontal();
-			GUILayout.Space (40);
-			EditorGUILayout.LabelField ("Arrastra tu fichero FBX a la carpeta \"/ROCHE/Inicio/\".", EditorStyles.wordWrappedLabel);
-			GUILayout.Space (20);
-			EditorGUILayout.EndHorizontal();
-			
-			GUILayout.BeginHorizontal ();
-			GUILayout.Space (20);
-			GUILayout.TextArea ("1.2 - Importar a escena",EditorStyles.boldLabel);
-			GUILayout.Space (10);
-			EditorGUILayout.EndHorizontal ();
-			
-			EditorGUILayout.BeginHorizontal();
-			GUILayout.Space (40);
-			EditorGUILayout.LabelField ("Arrastra el Prefab generado al siguiente recuadro.", EditorStyles.wordWrappedLabel);
-			GUILayout.Space (20);
-			EditorGUILayout.EndHorizontal();
-			GUILayout.Space (10);
-			EditorGUILayout.BeginHorizontal();
-			GUILayout.Space (40);			
-			GameObject pObj = null;
-			pObj = EditorGUILayout.ObjectField(pObj,typeof(GameObject),false,GUILayout.MinWidth(50),GUILayout.Height(50)) as GameObject;
-			if (pObj != null && (PrefabUtility.GetPrefabType(pObj) == PrefabType.ModelPrefab || PrefabUtility.GetPrefabType(pObj) == PrefabType.Prefab))
-			{
-				if (sceneBuilding != null) GameObject.DestroyImmediate(sceneBuilding); 
-				// Instantiate it, add layers+colliders and reposition it at the center
-				sceneBuilding = GameObject.Instantiate(pObj) as GameObject;
-				sceneBuilding.name = "Edificio";
-
-				SetLayerRecursively(sceneBuilding,"ROCHE_EDIFICIO");
-				sceneBuilding.layer = LayerMask.NameToLayer("ROCHE");
-				SetCollisionsRecursively(sceneBuilding);
-				SetStaticRecursively(sceneBuilding);
-				sceneBuilding.transform.position = new Vector3 (0, 0, 0);
-				
-				// Get building real bounds using children renderers
-				CalculateBuildingBounds();
-				CenterCameraOnGameObject(sceneBuilding);
-				toolbarPos = TOOLBAR_POS.SCENE;
-				pObj = null;
-			}
-			else pObj = null;
-			
-//			GUILayout.Box("",GUILayout.Width(2000),GUILayout.MinWidth(40),GUILayout.Height(40));
-			GUILayout.Space (20);GUILayout.FlexibleSpace();
-			EditorGUILayout.EndHorizontal();
-			
-			GUILayout.Space (5);
-			GUILayout.EndVertical ();
-			GUILayout.EndScrollView ();
-			return;
-		}
-
-		// We have a Building GameObject, show the remaining steps
-		// Floor Plan option
-		GUILayout.BeginHorizontal ();
-		GUILayout.Space (20);
-		EditorGUILayout.LabelField ("1.1 - Suelo", EditorStyles.boldLabel);
-		GUILayout.Space (20);
-		EditorGUILayout.EndHorizontal();
-
-		GameObject suelo = GameObject.Find("Suelo");
-		GUILayout.Space(5);
-
-		if (suelo == null)
-		{
-			GUILayout.BeginHorizontal ();
-			GUILayout.Space (40);
-			EditorGUILayout.LabelField ("Objeto 'Suelo' no encontrado.", EditorStyles.label);
-			GUILayout.Space (20);
-			EditorGUILayout.EndHorizontal();
-		}
-		else
-		{
-			suelo.renderer.sharedMaterial.shader = Shader.Find("ROCHE/Detail");
-
-			EditorGUILayout.BeginHorizontal();
-			GUILayout.FlexibleSpace();
-			EditorGUILayout.BeginVertical();
-
-			EditorGUILayout.LabelField("Plano CAD");
-			auxFloorCadTexture = EditorGUILayout.ObjectField(auxFloorCadTexture,
-		                                              typeof(Texture2D), false, GUILayout.Width(80), GUILayout.Height(80)) as Texture2D;
-			if(GUILayout.Button("Aplicar", GUILayout.MaxWidth(80)))
-			{
-				suelo.renderer.sharedMaterial.SetTexture("_Detail", auxFloorCadTexture);	
-				suelo.renderer.sharedMaterial.SetFloat("_DetailActive",1);
-			}
-	
-			EditorGUILayout.EndVertical();
-			GUILayout.FlexibleSpace();
-			EditorGUILayout.EndHorizontal();
-			GUILayout.Space(10);
-			EditorGUILayout.BeginHorizontal();
-			GUILayout.FlexibleSpace();
-			EditorGUILayout.BeginVertical();
-			EditorGUILayout.LabelField("Textura Suelo");
-			Texture tex = suelo.renderer.sharedMaterial.mainTexture;
-			if (auxFloorTexture == null && tex != null) auxFloorTexture = (Texture2D) tex;
-			auxFloorTexture = EditorGUILayout.ObjectField(auxFloorTexture,
-			                                              typeof(Texture2D), false, GUILayout.Width(80), GUILayout.Height(80)) as Texture2D;
-			if(GUILayout.Button("Aplicar", GUILayout.MaxWidth(80)))
-			{
-				suelo.renderer.sharedMaterial.mainTexture = auxFloorTexture;	
-				suelo.renderer.sharedMaterial.SetFloat("_DetailActive",0);
-			}
-			EditorGUILayout.EndVertical();
-			GUILayout.FlexibleSpace();
-			EditorGUILayout.EndHorizontal();
-
-		}
-
-
- 		GUILayout.Space(5);
+		EditorGUILayout.LabelField ("INICIO", EditorStyles.boldLabel);
 
 		GUILayout.BeginHorizontal ();
 		GUILayout.Space (20);
-		EditorGUILayout.LabelField ("1.2 - Paredes", EditorStyles.boldLabel);
-		GUILayout.Space (20);
-		EditorGUILayout.EndHorizontal();
-
-		GameObject pared = GameObject.Find("Paredes");
-		GUILayout.Space(5);
-
-		if (pared == null)
-		{
-			GUILayout.BeginHorizontal ();
-			GUILayout.Space (40);
-			EditorGUILayout.LabelField ("Objeto 'Paredes' no encontrado.", EditorStyles.label);
-			GUILayout.Space (20);
-			EditorGUILayout.EndHorizontal();
-		}
-		else
-		{
-			EditorGUILayout.BeginHorizontal();
-			GUILayout.FlexibleSpace();
-			EditorGUILayout.BeginVertical();
-			EditorGUILayout.LabelField("Textura Paredes");
-			Texture tex = pared.renderer.sharedMaterial.mainTexture;
-			if (auxWallTexture == null && tex != null) auxWallTexture = (Texture2D) tex;
-			auxWallTexture = EditorGUILayout.ObjectField(auxWallTexture,
-			                                              typeof(Texture2D), false, GUILayout.Width(80), GUILayout.Height(80)) as Texture2D;
-			if(GUILayout.Button("Aplicar", GUILayout.MaxWidth(80)))
-			{
-				pared.renderer.sharedMaterial.mainTextureScale = new Vector2 (1, 1);
-				pared.renderer.sharedMaterial.mainTextureOffset = new Vector2 (0, 0);
-				pared.renderer.sharedMaterial.mainTexture = auxWallTexture;	
-			}
-			EditorGUILayout.EndVertical();
-			GUILayout.FlexibleSpace();
-			EditorGUILayout.EndHorizontal();
-		}
- 		GUILayout.Space(5);
-
-		GUILayout.BeginHorizontal ();
-		GUILayout.Space (20);
-		EditorGUILayout.LabelField ("1.3 - Techo", EditorStyles.boldLabel);
-		GUILayout.Space (20);
-		EditorGUILayout.EndHorizontal();
-
-		GameObject techo = GameObject.Find("Techo");
-		GUILayout.Space(5);
-
-		if (techo == null)
-		{
-			GUILayout.BeginHorizontal ();
-			GUILayout.Space (40);
-			EditorGUILayout.LabelField ("Objeto 'Techo' no encontrado.", EditorStyles.label);
-			GUILayout.Space (20);
-			EditorGUILayout.EndHorizontal();
-		}
-		else
-		{
-			EditorGUILayout.BeginHorizontal();
-			GUILayout.FlexibleSpace();
-			EditorGUILayout.BeginVertical();
-			EditorGUILayout.LabelField("Textura Techo");
-			Texture tex = techo.renderer.sharedMaterial.mainTexture;
-			if (auxCeilingTexture == null && tex != null) auxCeilingTexture = (Texture2D) tex;
-			auxCeilingTexture = EditorGUILayout.ObjectField(auxCeilingTexture,
-			                                              typeof(Texture2D), false, GUILayout.Width(80), GUILayout.Height(80)) as Texture2D;
-			if(GUILayout.Button("Aplicar", GUILayout.MaxWidth(80)))
-			{
-				techo.renderer.sharedMaterial.mainTextureScale = new Vector2 (1, 1);
-				techo.renderer.sharedMaterial.mainTextureOffset = new Vector2 (0, 0);
-				techo.renderer.sharedMaterial.mainTexture = auxCeilingTexture;	
-			}
-			EditorGUILayout.EndVertical();
-			GUILayout.FlexibleSpace();
-			EditorGUILayout.EndHorizontal();
-		}
-		GUILayout.Space(5);
-
-		GUILayout.BeginHorizontal ();
-		GUILayout.Space (20);
-		EditorGUILayout.LabelField ("1.4 - Eliminar edificio", EditorStyles.boldLabel);
-		GUILayout.Space (20);
-		EditorGUILayout.EndHorizontal();
-		GUILayout.Space(5);
-
-		EditorGUILayout.BeginHorizontal();
-		GUILayout.Space (40);
-		EditorGUILayout.LabelField ("Eliminar el Edificio actual.", EditorStyles.wordWrappedLabel);
-		GUILayout.Space (20);
-		EditorGUILayout.EndHorizontal();
-		
-		GUILayout.Space(5);
-		
-		// Commute between CAD Floor Plan and original floor Texture
-		// Requires the Building GameObject to have a "Floor " child
-		// And requires the CAD Floor Plan Texture and original Texture
-		EditorGUILayout.BeginHorizontal();
-		GUILayout.FlexibleSpace();
-		if (GUILayout.Button ("ELIMINAR", GUILayout.MaxWidth (80))) {
-			GameObject.DestroyImmediate(sceneBuilding);			
-		}
-		GUILayout.FlexibleSpace();
-		EditorGUILayout.EndHorizontal();
-				
-		GUILayout.Space (5);
-		
-		
-		GUILayout.EndVertical ();
-
-        // "MOBILIARIO" Box
-		EditorGUILayout.BeginVertical ("Box");
-		EditorGUILayout.LabelField("2 - MOBILIARIO", EditorStyles.boldLabel);
-		
-		GUILayout.BeginHorizontal ();
-		GUILayout.Space (20);
-		EditorGUILayout.LabelField ("2.1 - Importar mobiliario", EditorStyles.boldLabel);
-		GUILayout.Space (20);
-		EditorGUILayout.EndHorizontal();
-		
-		EditorGUILayout.BeginHorizontal();
-		GUILayout.Space (40);
-		EditorGUILayout.LabelField ("Arrastra los objetos directamente a la escena.", EditorStyles.wordWrappedLabel);
-		GUILayout.Space (20);
-		EditorGUILayout.EndHorizontal();
-
-		EditorGUILayout.BeginHorizontal();
-		GUILayout.Space (20);
-		EditorGUILayout.LabelField ("2.2 - Posicionamiento", EditorStyles.boldLabel);
+		GUILayout.TextArea ("1.1 - Importación de FBX",EditorStyles.boldLabel);
+		GUILayout.Space (10);
 		EditorGUILayout.EndHorizontal ();
 		
 		EditorGUILayout.BeginHorizontal();
 		GUILayout.Space (40);
-		EditorGUILayout.LabelField("Usa el ratón para mover los objetos en la escena o usa las siguientes opciones.", EditorStyles.wordWrappedLabel);
+		EditorGUILayout.LabelField ("Arrastra tu fichero FBX del edificio a la carpeta \"/ROCHE/Inicio/\".", EditorStyles.wordWrappedLabel);
 		GUILayout.Space (20);
 		EditorGUILayout.EndHorizontal();
 		
-		GUILayout.Space(5);
+		GUILayout.BeginHorizontal ();
+		GUILayout.Space (20);
+		GUILayout.TextArea ("1.2 - Importar a escena",EditorStyles.boldLabel);
+		GUILayout.Space (10);
+		EditorGUILayout.EndHorizontal ();
 		
+		EditorGUILayout.BeginHorizontal();
+		GUILayout.Space (40);
+		EditorGUILayout.LabelField ("Arrastra el modelo al siguiente recuadro:", EditorStyles.wordWrappedLabel);
+		GUILayout.Space (20);
+		EditorGUILayout.EndHorizontal();
+		GUILayout.Space (10);
+		EditorGUILayout.BeginHorizontal();
+		GUILayout.Space (40);			
+		GameObject pObj = null;
+		pObj = EditorGUILayout.ObjectField(pObj,typeof(GameObject),false,GUILayout.MinWidth(50),GUILayout.Height(50)) as GameObject;
+		if (pObj != null && (PrefabUtility.GetPrefabType(pObj) == PrefabType.ModelPrefab || PrefabUtility.GetPrefabType(pObj) == PrefabType.Prefab))
+		{
+			if (sceneBuilding != null) GameObject.DestroyImmediate(sceneBuilding); 
+			// Instantiate it, add layers+colliders and reposition it at the center
+			sceneBuilding = GameObject.Instantiate(pObj) as GameObject;
+			sceneBuilding.name = "Edificio";
+			
+			SetLayerRecursively(sceneBuilding,"ROCHE_EDIFICIO");
+			sceneBuilding.layer = LayerMask.NameToLayer("ROCHE");
+			SetCollisionsRecursively(sceneBuilding);
+			SetStaticRecursively(sceneBuilding);
+			sceneBuilding.transform.position = new Vector3 (0, 0, 0);
+			
+			// Get building real bounds using children renderers
+			CalculateBuildingBounds();
+			CenterCameraOnGameObject(sceneBuilding);
+			//toolbarPos = TOOLBAR_POS.SCENE;
+			pObj = null;
+		}
+		else pObj = null;
+		
+		//			GUILayout.Box("",GUILayout.Width(2000),GUILayout.MinWidth(40),GUILayout.Height(40));
+		GUILayout.Space (20);GUILayout.FlexibleSpace();
+		EditorGUILayout.EndHorizontal();
+		
+		GUILayout.Space (5);
+		GUILayout.EndVertical ();
+		GUILayout.EndScrollView ();
+		return;
+	}
+
+	#endregion
+
+	#region Design Tab
+
+	bool showFloor = false;
+	bool showWalls = false;
+	bool showCeiling = false;
+	bool showLights1 = false;
+	bool showLights2 = false;
+
+	private void TabDesign()
+	{
+		// Vertical Scrollbar
+		scrollPos = EditorGUILayout.BeginScrollView (scrollPos);
+
+		// ROCHE Header Icon
+		DrawRocheIconBox();		
+		GUILayout.BeginVertical();
+		GUILayout.BeginHorizontal();
+		GUILayout.FlexibleSpace();
+		if (GUILayout.Button ("Eliminar edificio actual", GUILayout.MaxWidth (160))) {
+				GameObject.DestroyImmediate(sceneBuilding);			
+		}
+		GUILayout.FlexibleSpace();
+		GUILayout.EndHorizontal();
+		GUILayout.Space(10);
+
+		EditorGUILayout.LabelField("Texturas", EditorStyles.boldLabel);
+
+		showFloor = EditorGUILayout.Foldout(showFloor, "Suelo");
+		if (showFloor)
+		{
+			GameObject suelo = GameObject.Find("Suelo");
+			if (suelo == null)
+			{
+				EditorGUILayout.LabelField ("Objeto 'Suelo' no encontrado.", EditorStyles.label);
+			}
+			else
+			{
+				EditorGUILayout.BeginVertical();
+
+				EditorGUILayout.LabelField("Plano CAD");
+				suelo.renderer.sharedMaterial.shader = Shader.Find("ROCHE/Detail");
+				auxFloorCadTexture = EditorGUILayout.ObjectField(auxFloorCadTexture,
+			                                              typeof(Texture2D), false, GUILayout.Width(80), GUILayout.Height(80)) as Texture2D;
+				if(GUILayout.Button("Aplicar", GUILayout.MaxWidth(80)))
+				{
+					suelo.renderer.sharedMaterial.SetTexture("_Detail", auxFloorCadTexture);	
+					suelo.renderer.sharedMaterial.SetFloat("_DetailActive",1);
+				}
+				EditorGUILayout.EndVertical();
+				EditorGUILayout.BeginVertical();
+				EditorGUILayout.LabelField("Textura Suelo");
+				Texture tex = suelo.renderer.sharedMaterial.mainTexture;
+				if (auxFloorTexture == null && tex != null) auxFloorTexture = (Texture2D) tex;
+				auxFloorTexture = EditorGUILayout.ObjectField(auxFloorTexture,
+				                                              typeof(Texture2D), false, GUILayout.Width(80), GUILayout.Height(80)) as Texture2D;
+				if(GUILayout.Button("Aplicar", GUILayout.MaxWidth(80)))
+				{
+					suelo.renderer.sharedMaterial.mainTexture = auxFloorTexture;	
+					suelo.renderer.sharedMaterial.SetFloat("_DetailActive",0);
+				}
+				EditorGUILayout.EndVertical();
+			}
+		}
+
+		showWalls = EditorGUILayout.Foldout(showWalls, "Paredes");
+		if (showWalls)
+		{
+			GameObject paredes = GameObject.Find("Paredes");
+			if (paredes == null) paredes = GameObject.Find("Pared");
+			if (paredes == null)
+			{
+				EditorGUILayout.LabelField ("Objeto 'Paredes' no encontrado.", EditorStyles.label);
+			}
+			else
+			{
+				EditorGUILayout.BeginVertical();
+				
+				EditorGUILayout.LabelField("Textura Paredes");
+				//Texture tex = paredes.renderer.sharedMaterial.mainTexture;
+				//paredes.renderer.sharedMaterial.shader = Shader.Find("ROCHE/Detail");
+				auxWallTexture = EditorGUILayout.ObjectField(auxWallTexture,
+				                                                 typeof(Texture2D), false, GUILayout.Width(80), GUILayout.Height(80)) as Texture2D;
+				if(GUILayout.Button("Aplicar", GUILayout.MaxWidth(80)))
+				{
+					paredes.renderer.sharedMaterial.mainTextureScale = new Vector2 (1, 1);
+					paredes.renderer.sharedMaterial.mainTextureOffset = new Vector2 (0, 0);
+					paredes.renderer.sharedMaterial.mainTexture = auxWallTexture;	
+				}
+				EditorGUILayout.EndVertical();
+			}
+		}
+
+		showCeiling = EditorGUILayout.Foldout(showCeiling, "Techo");
+		if (showCeiling)
+		{
+			GameObject techo = GameObject.Find("Techo");
+			if (techo == null)
+			{
+				EditorGUILayout.LabelField ("Objeto 'Techo' no encontrado.", EditorStyles.label);
+			}
+			else
+			{
+				EditorGUILayout.BeginVertical();
+				
+				EditorGUILayout.LabelField("Textura Techo");
+				//Texture tex = paredes.renderer.sharedMaterial.mainTexture;
+				//paredes.renderer.sharedMaterial.shader = Shader.Find("ROCHE/Detail");
+				auxCeilingTexture = EditorGUILayout.ObjectField(auxCeilingTexture,
+				                                             typeof(Texture2D), false, GUILayout.Width(80), GUILayout.Height(80)) as Texture2D;
+				if(GUILayout.Button("Aplicar", GUILayout.MaxWidth(80)))
+				{
+					techo.renderer.sharedMaterial.mainTextureScale = new Vector2 (1, 1);
+					techo.renderer.sharedMaterial.mainTextureOffset = new Vector2 (0, 0);
+					techo.renderer.sharedMaterial.mainTexture = auxCeilingTexture;	
+				}
+				EditorGUILayout.EndVertical();
+			}
+		}
+
+		GUILayout.Space(10);
+
+		EditorGUILayout.LabelField("Mobiliario", EditorStyles.boldLabel);
+		EditorGUILayout.HelpBox("Arrastra los objetos de mobiliario directamente a la escena.",MessageType.Info);
+
+		GUILayout.Space(10);
+
+		EditorGUILayout.LabelField("Posicionamiento", EditorStyles.boldLabel);
+		EditorGUILayout.HelpBox("Utiliza el editor para posicionar, rotar y escalar los objetos en la escena, o utiliza las siguientes herramientas seleccionando uno o más objetos.",MessageType.Info);
+
+
 		// Center GameObject at the center of the Building GameObject
 		GUILayout.BeginHorizontal ();
 		GUILayout.FlexibleSpace();
-		if (GUILayout.Button ("CENTRAR EN EDIFICIO", GUILayout.MaxWidth (180))) {
-			Undo.RegisterSceneUndo ("Move to Center");
+		if (GUILayout.Button ("Centrar en edificio", GUILayout.MaxWidth (160))) {
+			//Undo.RecordObjects(.RegisterSceneUndo ("Move to Center");
 			if (Selection.transforms.Length == 0) 
 			{
 				EditorUtility.DisplayDialog ("Error", "No se ha seleccionado ningún objeto.", "Aceptar");
 				return;
 			}
-			foreach (Transform t in Selection.transforms)
-			{
-				PlaceOnFloor(t, true);
-			}
+			foreach (Transform t in Selection.transforms) PlaceOnFloor(t, true);
 		}
 		GUILayout.FlexibleSpace();
 		EditorGUILayout.EndHorizontal ();
 		GUILayout.BeginHorizontal ();
 		GUILayout.FlexibleSpace();
-		if (GUILayout.Button ("COLOCAR SOBRE EL SUELO", GUILayout.MaxWidth (180))) {
-			Undo.RegisterSceneUndo ("Put on floor");
+		if (GUILayout.Button ("Colocar sobre el suelo", GUILayout.MaxWidth (160))) {
 			if (Selection.transforms.Length == 0) 
 			{
 				EditorUtility.DisplayDialog ("Error", "No se ha seleccionado ningún objeto.", "Aceptar");
 				return;
 			}
-			foreach (Transform t in Selection.transforms)
-			{
-				PlaceOnFloor(t, false);
-			}
+			foreach (Transform t in Selection.transforms) PlaceOnFloor(t, false);
 		}
 		GUILayout.FlexibleSpace();
 		EditorGUILayout.EndHorizontal ();
-		
 		GUILayout.BeginHorizontal ();
 		GUILayout.FlexibleSpace();
-		if (GUILayout.Button ("APOYAR CONTRA LA PARED", GUILayout.MaxWidth (180))) {
-			Undo.RegisterSceneUndo ("Put on wall");
+		if (GUILayout.Button ("Apoyar contra la pared", GUILayout.MaxWidth (160))) {
 			if (Selection.transforms.Length == 0) 
 			{
 				EditorUtility.DisplayDialog ("Error", "No se ha seleccionado ningún objeto.", "Aceptar");
 				return;
 			}
-
 			int layerMask = (1 << 9);
 			foreach (Transform tr in Selection.transforms)
 			{
 				Transform t = GetParentFurnitureTransform(tr);
+				Undo.RecordObject (t,t.name);
+				
 				RaycastHit hit;
 				Bounds b = t.renderer.bounds;
 				Vector3 pos = Vector3.zero;
@@ -748,484 +690,162 @@ public class ROCHE : EditorWindow
 		}
 		GUILayout.FlexibleSpace();
 		EditorGUILayout.EndHorizontal ();
+		GUILayout.Space(10);
+		EditorGUILayout.LabelField("Rotación", EditorStyles.boldLabel);
+		EditorGUILayout.HelpBox("Selecciona uno o más objetos.",MessageType.Info);
 
-		
-		GUILayout.Space(5);
-		
-		EditorGUILayout.BeginHorizontal();
-		GUILayout.Space (20);
-		EditorGUILayout.LabelField ("2.3 - Rotar", EditorStyles.boldLabel);
-		GUILayout.Space (20);
-		EditorGUILayout.EndHorizontal ();
-		
-		GUILayout.Space(5);
-		
 		// Rotation Buttons
 		GUILayout.BeginHorizontal ();
 		GUILayout.FlexibleSpace();
-		if (GUILayout.Button ("ROTAR X", GUILayout.MaxWidth (80))) {
-			Undo.RegisterUndo (Selection.activeGameObject, "RotateX");
+		if (GUILayout.Button ("Rotar X", GUILayout.MaxWidth (80))) {
 			if (Selection.transforms.Length == 0) 
 			{
 				EditorUtility.DisplayDialog ("Error", "No se ha seleccionado ningún objeto.", "Aceptar");
 				return;
 			}
 			foreach (Transform t in Selection.transforms)
+			{
+				Undo.RecordObject(t,t.name);
 				t.RotateAround(Vector3.right, (float)Math.PI/2.0f);
+			}
 		}
 
-		if (GUILayout.Button ("ROTAR Y", GUILayout.MaxWidth (80))) {
-			Undo.RegisterUndo (Selection.activeGameObject, "RotateY");
+		if (GUILayout.Button ("Rotar Y", GUILayout.MaxWidth (80))) {
 			if (Selection.transforms.Length == 0) 
 			{
 				EditorUtility.DisplayDialog ("Error", "No se ha seleccionado ningún objeto.", "Aceptar");
 				return;
 			}
-			foreach (Transform t in Selection.transforms) t.RotateAround(Vector3.up, (float)Math.PI/2.0f);
+			foreach (Transform t in Selection.transforms) 
+			{
+				Undo.RecordObject(t,t.name);
+				t.RotateAround(Vector3.up, (float)Math.PI/2.0f);
+			}
 		}
 
-		if (GUILayout.Button ("ROTAR Z", GUILayout.MaxWidth (80))) {
-			Undo.RegisterUndo (Selection.activeGameObject, "RotateZ");
+		if (GUILayout.Button ("Rotar Z", GUILayout.MaxWidth (80))) {
 			if (Selection.transforms.Length == 0) 
 			{
 				EditorUtility.DisplayDialog ("Error", "No se ha seleccionado ningún objeto.", "Aceptar");
 				return;
 			}
-			foreach (Transform t in Selection.transforms) t.RotateAround(Vector3.forward,(float)Math.PI/2.0f);
+			foreach (Transform t in Selection.transforms) 
+			{
+				Undo.RecordObject(t,t.name);
+				t.RotateAround(Vector3.forward,(float)Math.PI/2.0f);
+			}
 		}
 		GUILayout.FlexibleSpace();
 		EditorGUILayout.EndHorizontal ();
-		
-		GUILayout.Space(5);
-		
-		EditorGUILayout.BeginHorizontal();
-		GUILayout.Space (20);
-		EditorGUILayout.LabelField("2.4 - Alinear", EditorStyles.boldLabel);
-		GUILayout.Space (20);
-		EditorGUILayout.EndHorizontal ();
-		
-		GUILayout.Space(5);
-		
+
+		GUILayout.Space(10);
+		EditorGUILayout.LabelField("Alineamiento", EditorStyles.boldLabel);
+		EditorGUILayout.HelpBox("Selecciona dos o más objetos.",MessageType.Info);
+
 		// Axis Alignment Buttons. They require to select a group of 2 or more objects
 		GUILayout.BeginHorizontal ();
 		GUILayout.FlexibleSpace();
-		if (GUILayout.Button ("ALINEAR X", GUILayout.MaxWidth (80))) {
-			Undo.RegisterSceneUndo ("ALINEAR X");
+		if (GUILayout.Button ("Alinear X", GUILayout.MaxWidth (80))) {
 			AlignGameObjects (0);
 		}
-		if (GUILayout.Button ("ALINEAR Y", GUILayout.MaxWidth (80))) {
-			Undo.RegisterSceneUndo ("ALINEAR Y");
+		if (GUILayout.Button ("Alinear Y", GUILayout.MaxWidth (80))) {
 			AlignGameObjects (1);
 		}
-		if (GUILayout.Button ("ALINEAR Z", GUILayout.MaxWidth (80))) {
-			Undo.RegisterSceneUndo ("ALINEAR Z");
+		if (GUILayout.Button ("Alinear Z", GUILayout.MaxWidth (80))) {
 			AlignGameObjects (2);
 		}
 		GUILayout.FlexibleSpace();
 		EditorGUILayout.EndHorizontal ();
-		
-		GUILayout.Space(5);
-		
-		EditorGUILayout.BeginHorizontal();
-		GUILayout.Space (20);
-		EditorGUILayout.LabelField ("2.5 - Sistema de colisiones", EditorStyles.boldLabel);
-		GUILayout.Space (20);
-		EditorGUILayout.EndHorizontal ();
-		
-		GUILayout.Space(5);
-		
-		// View collisions on editor scene
-		GUILayout.BeginHorizontal ();
-		GUILayout.Space (40);
-		EditorGUILayout.LabelField ("Mostrar colisión del objeto seleccionado con otros objetos colisionables.", EditorStyles.wordWrappedLabel);
-		GUILayout.Space (20);
-		EditorGUILayout.EndHorizontal ();
-		
-		GUILayout.Space(5);
-		
-		GUILayout.BeginHorizontal ();
-		GUILayout.FlexibleSpace();
-		string buttonLabel = "ACTIVAR";
-		if (viewCollisions) buttonLabel = "DESACTIVAR";
-		if (GUILayout.Button (buttonLabel, GUILayout.MaxWidth (100))) 
-		{
-			Undo.RegisterSceneUndo ("ViewCollisions");
-			viewCollisions = !viewCollisions;
-		}
-		GUILayout.FlexibleSpace();
-		EditorGUILayout.EndHorizontal ();
-		
-		GUILayout.Space (5);
-		
-				// View collisions on editor scene
-		GUILayout.BeginHorizontal ();
-		GUILayout.Space (40);
-		EditorGUILayout.LabelField ("Añadir colisiones a los objetos seleccionados.", EditorStyles.wordWrappedLabel);
-		GUILayout.Space (20);
-		EditorGUILayout.EndHorizontal ();
-		GUILayout.Space (5);
-		GUILayout.BeginHorizontal ();
-		GUILayout.FlexibleSpace();
-		if (GUILayout.Button ("AÑADIR", GUILayout.MaxWidth (100))) 
-		{
-			Undo.RegisterSceneUndo ("AddCollisions");
-			
-			foreach (GameObject g in Selection.gameObjects) 
-			{
-				SetCollisionsRecursively(g);
-			}
-		}
-		GUILayout.FlexibleSpace();
-		EditorGUILayout.EndHorizontal ();
-		
-		// View collisions on editor scene
-		GUILayout.BeginHorizontal ();
-		GUILayout.Space (40);
-		EditorGUILayout.LabelField ("Eliminar colisiones de los objetos seleccionados.", EditorStyles.wordWrappedLabel);
-		GUILayout.Space (20);
-		EditorGUILayout.EndHorizontal ();
-		GUILayout.Space (5);
-		GUILayout.BeginHorizontal ();
-		GUILayout.FlexibleSpace();
-		if (GUILayout.Button ("ELIMINAR", GUILayout.MaxWidth (100))) 
-		{
-			Undo.RegisterSceneUndo ("DeleteCollisions");
-			foreach (GameObject g in Selection.gameObjects) 
-			{
-				RemoveCollisionsRecursively(g);
-			}
-		}
-		GUILayout.FlexibleSpace();
-		EditorGUILayout.EndHorizontal ();
-		
-		
-		
-		GUILayout.Space (5);
-		EditorGUILayout.BeginHorizontal();
-		GUILayout.Space (20);
-		EditorGUILayout.LabelField("2.6 - Sobreescribir Original", EditorStyles.boldLabel);
-		GUILayout.Space (20);
-		EditorGUILayout.EndHorizontal ();
-		GUILayout.Space(5);
-		
-		GUILayout.BeginHorizontal ();
-		GUILayout.Space (40);
-		EditorGUILayout.LabelField ("Puedes aplicar las propiedades e información de este objeto al objeto original.", EditorStyles.wordWrappedLabel);
-		GUILayout.Space (20);
-		EditorGUILayout.EndHorizontal ();
-		GUILayout.Space(5);
-		GUILayout.BeginHorizontal ();
-		GUILayout.FlexibleSpace();
-		if (GUILayout.Button ("MODIFICAR", GUILayout.MaxWidth (100))) {
-			Undo.RegisterSceneUndo ("modify prefab");
-			if (Selection.transforms.Length == 0) 
-			{
-				EditorUtility.DisplayDialog ("Error", "No se ha seleccionado ningún objeto.", "Aceptar");
-				return;
-			}
-			foreach (Transform t in Selection.transforms)
-			{
-				PrefabUtility.ReplacePrefab(t.gameObject, PrefabUtility.GetPrefabParent(t.gameObject), ReplacePrefabOptions.ConnectToPrefab);
-			}	
-		}
-		GUILayout.FlexibleSpace();
-		EditorGUILayout.EndHorizontal ();
-		GUILayout.Space(5);
-		
-		GUILayout.EndVertical ();
-		
-		
-		if (Selection.activeGameObject == null || Selection.activeGameObject.layer != LayerMask.NameToLayer("ROCHE_MOBILIARIO"))
-		{
-			// "EDIFICIO" Box
-			EditorGUILayout.BeginVertical ("Box");
-			EditorGUILayout.LabelField ("3 - FICHA DEL OBJETO", EditorStyles.boldLabel);
-			
-			GUILayout.Space(5);
-		
-			// View collisions on editor scene
-			GUILayout.BeginHorizontal ();
-			GUILayout.Space (40);
-			EditorGUILayout.LabelField("Selecciona un objeto de mobiliario para editar su ficha.", EditorStyles.wordWrappedLabel);
-			GUILayout.Space (20);
-			EditorGUILayout.EndHorizontal ();
-			
-			GUILayout.Space(5);
-			
-			GUILayout.EndVertical ();
-		}
-		else 
-		{
-			// Get the Ficha Component
-			GameObject obj = Selection.activeGameObject;
-			if (obj.transform.childCount == 0)
-			{
-				GameObject parent = obj.transform.parent.gameObject;
-				if (parent.layer == LayerMask.NameToLayer("ROCHE_MOBILIARIO")) obj = parent;
-			}
-			Ficha ficha = obj.GetComponent<Ficha>();
-			if (ficha == null) ficha = obj.AddComponent<Ficha>();
-			
-			// "EDIFICIO" Box
-			EditorGUILayout.BeginVertical ("Box");
-			EditorGUILayout.LabelField("3 - FICHA DEL OBJETO", EditorStyles.boldLabel);
-			
-			GUILayout.Space(5);
-			
-			EditorGUILayout.BeginHorizontal();
-			GUILayout.Space(20);
-			ficha.activar = EditorGUILayout.Toggle("MOSTRAR FICHA", ficha.activar, EditorStyles.toggle );
-			GUILayout.Space (20);
-			EditorGUILayout.EndHorizontal();
-			
-			EditorGUILayout.BeginHorizontal();
-			GUILayout.Space(20);
-			EditorGUILayout.LabelField ("Tag:", EditorStyles.boldLabel);
-			GUILayout.Space(20);
-			EditorGUILayout.EndHorizontal ();
-			
-			EditorGUILayout.BeginHorizontal();
-			GUILayout.Space(40);
-			ficha.tagName = GUILayout.TextField(ficha.tagName, 10);
-			GUILayout.Space (20);
-			EditorGUILayout.EndHorizontal();
-			
-			EditorGUILayout.BeginHorizontal();
-			GUILayout.Space(20);
-			EditorGUILayout.LabelField ("Nombre:", EditorStyles.boldLabel);
-			GUILayout.Space(20);
-			EditorGUILayout.EndHorizontal ();
-			
-			EditorGUILayout.BeginHorizontal();
-			GUILayout.Space(40);
-			ficha.nombre = GUILayout.TextField(ficha.nombre,60);
-			GUILayout.Space (20);
-			EditorGUILayout.EndHorizontal();
-			
-			EditorGUILayout.BeginHorizontal();
-			GUILayout.Space(20);
-			EditorGUILayout.LabelField ("Área:", EditorStyles.boldLabel);
-			GUILayout.Space(20);
-			EditorGUILayout.EndHorizontal ();
-			
-			EditorGUILayout.BeginHorizontal();
-			GUILayout.Space(40);
-			ficha.area = GUILayout.TextField(ficha.area, 60);
-			GUILayout.Space (20);
-			EditorGUILayout.EndHorizontal();
-			
-			EditorGUILayout.BeginHorizontal();
-			GUILayout.Space(20);
-			EditorGUILayout.LabelField("Descripción:", EditorStyles.boldLabel);
-			GUILayout.Space(20);
-			EditorGUILayout.EndHorizontal ();
-			
-			EditorGUILayout.BeginHorizontal();
-			GUILayout.Space(40);
-			ficha.descripcion = EditorGUILayout.TextArea(ficha.descripcion, GUILayout.MaxWidth(250));
-			GUILayout.Space (20);
-			EditorGUILayout.EndHorizontal();
-			
-			EditorGUILayout.BeginHorizontal();
-			GUILayout.Space(20);
-			EditorGUILayout.LabelField ("Propiedades:", EditorStyles.boldLabel);
-			GUILayout.Space(20);
-			EditorGUILayout.EndHorizontal ();
-			
-			EditorGUILayout.BeginHorizontal();
-			GUILayout.Space(40);
-			ficha.propiedades = EditorGUILayout.TextArea(ficha.propiedades, GUILayout.MaxWidth(250));
-			GUILayout.Space (20);
-			EditorGUILayout.EndHorizontal();
-			
-			EditorGUILayout.BeginHorizontal();
-			GUILayout.Space(20);
-			EditorGUILayout.LabelField ("Imagen:", EditorStyles.boldLabel);
-			GUILayout.Space(20);
-			EditorGUILayout.EndHorizontal ();
-			
-			EditorGUILayout.BeginHorizontal();
-			GUILayout.Space(40);
-//			if (ficha.imagen == null) ficha.imagen = EditorGUIUtility.whiteTexture;
-			ficha.imagen = EditorGUILayout.ObjectField(ficha.imagen,
-                    typeof(Texture2D), false, GUILayout.Width(80), GUILayout.Height(80)) as Texture2D;
-			GUILayout.Space (20);
-			EditorGUILayout.EndHorizontal();
-			
-			GUILayout.Space(5);
-			
-			EditorUtility.SetDirty(ficha);
-			
-			GUILayout.EndVertical ();
-		}
-		
-		EditorGUILayout.EndScrollView ();
-	}
 
-	// "Iluminación" tab contents
-	private void LightingTab ()
-	{
-		// Vertical Scrollbar
-		scrollPos = GUILayout.BeginScrollView (scrollPos);
-		
-		// ROCHE Header Icon
-		DrawRocheIconBox();	
-		
-		// "LUCES" Box
-		EditorGUILayout.BeginVertical ("Box");
-		EditorGUILayout.LabelField ("1- LUCES", EditorStyles.boldLabel);
-		
-		// Manual Positioning
-		EditorGUILayout.BeginHorizontal();
-		GUILayout.Space (20);
-		EditorGUILayout.LabelField ("1.1 - Posicionamiento manual", EditorStyles.boldLabel);
-		GUILayout.Space (20);
-		EditorGUILayout.EndHorizontal ();
-		
-		GUILayout.Space(5);
-				
-		GUILayout.BeginHorizontal ();
-		GUILayout.Space (40);
-		EditorGUILayout.LabelField ("Utiliza los botones para crear un tipo de luz en la escena.", EditorStyles.wordWrappedLabel);
-		GUILayout.Space (40);
-		EditorGUILayout.EndHorizontal ();
-		
-		GUILayout.Space(5);
-		
+		GUILayout.Space(10);
+		EditorGUILayout.LabelField("Iluminación", EditorStyles.boldLabel);
+		EditorGUILayout.HelpBox("Creación de puntos de luz.",MessageType.Info);
 		// Light types (prefabs)
-		GUILayout.BeginHorizontal ();
-		GUILayout.FlexibleSpace();
-		if (GUILayout.Button (YLightIconOne, GUILayout.MaxWidth (35), GUILayout.MaxHeight (35))) 
+		showLights1 = EditorGUILayout.Foldout(showLights1, "Manual");
+		if (showLights1)
 		{
-			Undo.RegisterSceneUndo ("Light1");
-			CreateLight(new Vector3(0,sceneBuildingBounds.center.y,0));
-		}
-		if (GUILayout.Button (YLightIconThree, GUILayout.MaxWidth (35), GUILayout.MaxHeight (35))) 
-		{
-			Undo.RegisterSceneUndo ("Light2");
-			CreateLight(new Vector3(-4,sceneBuildingBounds.center.y,0));
-			CreateLight(new Vector3(0,sceneBuildingBounds.center.y,0));
-			CreateLight(new Vector3(4,sceneBuildingBounds.center.y,0));
-		}
-		GUILayout.FlexibleSpace();
-		EditorGUILayout.EndHorizontal ();
-		 
-		GUILayout.BeginHorizontal ();
-		GUILayout.FlexibleSpace();
-		if (GUILayout.Button (BLightIconOne, GUILayout.MaxWidth (35), GUILayout.MaxHeight (35))) 
-		{
-			Undo.RegisterSceneUndo ("Light4");
-			CreateLightBlue(new Vector3(0,sceneBuildingBounds.center.y,0));
-		}
-		if (GUILayout.Button (BLightIconThree, GUILayout.MaxWidth (35), GUILayout.MaxHeight (35))) 
-		{
-			Undo.RegisterSceneUndo ("Light5");
-			CreateLightBlue(new Vector3(-4,sceneBuildingBounds.center.y,0));
-			CreateLightBlue(new Vector3(0,sceneBuildingBounds.center.y,0));
-			CreateLightBlue(new Vector3(4,sceneBuildingBounds.center.y,0));
-		}
-		GUILayout.FlexibleSpace();
-		EditorGUILayout.EndHorizontal ();
-		
-		GUILayout.Space (20);
-		
-		// Automatic generation
-		EditorGUILayout.BeginHorizontal();
-		GUILayout.Space (20);
-		EditorGUILayout.LabelField ("1.2 - Generación automática", EditorStyles.boldLabel);
-		GUILayout.Space (20);
-		EditorGUILayout.EndHorizontal ();
-				
-		GUILayout.Space(5);
-		
-		// Distance between lights
-		GUILayout.BeginHorizontal ();
-		GUILayout.Space (40);
-		EditorGUILayout.LabelField ("Distancia entre cada luz.", EditorStyles.wordWrappedLabel);
-		GUILayout.Space (20);
-		EditorGUILayout.EndHorizontal ();
-		
-		GUILayout.Space(5);
-		
-		GUILayout.BeginHorizontal ();
-		GUILayout.FlexibleSpace();
-		GUILayout.Space(20);
-		lightDistance = EditorGUILayout.Slider(lightDistance, 3.0f, 20.0f, GUILayout.MaxWidth (1000));
-		GUILayout.Space(20);
-		GUILayout.FlexibleSpace();
-		EditorGUILayout.EndHorizontal ();
-		
-		GUILayout.Space (5);
-		
-		// Buttons for Automatic Light Generation
-		GUILayout.BeginHorizontal ();
-		GUILayout.FlexibleSpace();
-		
-		if (GUILayout.Button (YLightIconFive, GUILayout.MaxWidth (35), GUILayout.MaxHeight (35))) 
-		{
-			Undo.RegisterSceneUndo ("Generate_Lights1");
-			GenerateLights("ROCHE/Prefabs/YellowLight");
+			EditorGUILayout.HelpBox("Utiliza los botones para crear un tipo de luz en la escena.",MessageType.Info);
+			GUILayout.BeginHorizontal ();
+			GUILayout.FlexibleSpace();
+			if (GUILayout.Button (YLightIconOne, GUILayout.MaxWidth (35), GUILayout.MaxHeight (35))) 
+			{
+				Undo.RegisterSceneUndo ("Light1");
+				CreateLight(new Vector3(0,sceneBuildingBounds.center.y,0));
+			}
+			if (GUILayout.Button (YLightIconThree, GUILayout.MaxWidth (35), GUILayout.MaxHeight (35))) 
+			{
+				Undo.RegisterSceneUndo ("Light2");
+				CreateLight(new Vector3(-4,sceneBuildingBounds.center.y,0));
+				CreateLight(new Vector3(0,sceneBuildingBounds.center.y,0));
+				CreateLight(new Vector3(4,sceneBuildingBounds.center.y,0));
+			}
+			GUILayout.FlexibleSpace();
+			EditorGUILayout.EndHorizontal ();
+			 
+			GUILayout.BeginHorizontal ();
+			GUILayout.FlexibleSpace();
+			if (GUILayout.Button (BLightIconOne, GUILayout.MaxWidth (35), GUILayout.MaxHeight (35))) 
+			{
+				Undo.RegisterSceneUndo ("Light4");
+				CreateLightBlue(new Vector3(0,sceneBuildingBounds.center.y,0));
+			}
+			if (GUILayout.Button (BLightIconThree, GUILayout.MaxWidth (35), GUILayout.MaxHeight (35))) 
+			{
+				Undo.RegisterSceneUndo ("Light5");
+				CreateLightBlue(new Vector3(-4,sceneBuildingBounds.center.y,0));
+				CreateLightBlue(new Vector3(0,sceneBuildingBounds.center.y,0));
+				CreateLightBlue(new Vector3(4,sceneBuildingBounds.center.y,0));
+			}
+			GUILayout.FlexibleSpace();
+			EditorGUILayout.EndHorizontal ();
 		}
 		
-		if (GUILayout.Button (BLightIconFive, GUILayout.MaxWidth (35), GUILayout.MaxHeight (35))) 
+		showLights2 = EditorGUILayout.Foldout(showLights2, "Automático");
+		if (showLights2)
 		{
-			Undo.RegisterSceneUndo ("Generate_Lights2");
-			GenerateLights("ROCHE/Prefabs/BlueLight");
+			EditorGUILayout.HelpBox("Define distancia entre puntos de luz y selecciona el tipo de luz deseado.",MessageType.Info);
+			GUILayout.BeginHorizontal ();
+			GUILayout.FlexibleSpace();
+			GUILayout.Space(20);
+			lightDistance = EditorGUILayout.Slider(lightDistance, 3.0f, 20.0f, GUILayout.MaxWidth (1000));
+			GUILayout.Space(20);
+			GUILayout.FlexibleSpace();
+			EditorGUILayout.EndHorizontal ();
+			
+			GUILayout.Space (5);
+			
+			// Buttons for Automatic Light Generation
+			GUILayout.BeginHorizontal ();
+			GUILayout.FlexibleSpace();
+			
+			if (GUILayout.Button (YLightIconFive, GUILayout.MaxWidth (35), GUILayout.MaxHeight (35))) 
+			{
+				GenerateLights("ROCHE/Prefabs/YellowLight");
+			}
+			
+			if (GUILayout.Button (BLightIconFive, GUILayout.MaxWidth (35), GUILayout.MaxHeight (35))) 
+			{
+				GenerateLights("ROCHE/Prefabs/BlueLight");
+			}
+			
+			GUILayout.FlexibleSpace();
+			EditorGUILayout.EndHorizontal ();
 		}
-		
-		GUILayout.FlexibleSpace();
-		EditorGUILayout.EndHorizontal ();
-		
-		GUILayout.Space(5);
-		
-		EditorGUILayout.BeginHorizontal();
-		GUILayout.Space (20);
-		EditorGUILayout.LabelField ("1.3 - Eliminar luces", EditorStyles.boldLabel);
-		GUILayout.Space (20);
-		EditorGUILayout.EndHorizontal ();
-				
-		GUILayout.Space(5);
-		
-		// Distance between lights
-		GUILayout.BeginHorizontal ();
-		GUILayout.Space (40);
-		EditorGUILayout.LabelField ("Eliminar todas las luces de la escena.", EditorStyles.wordWrappedLabel);
-		GUILayout.Space (20);
-		EditorGUILayout.EndHorizontal ();
-		
-		GUILayout.Space(5);
-		
+		EditorGUILayout.HelpBox("Puedes eliminar luces manualmente o utilizar el siguiente botón para eliminar todas las luces de la escena.",MessageType.Warning);
+
 		GUILayout.BeginHorizontal ();
 		GUILayout.FlexibleSpace();
-		if (GUILayout.Button ("ELIMINAR", GUILayout.MaxWidth (80))) {
-			Undo.RegisterSceneUndo ("Destroy_Lights");
+		if (GUILayout.Button ("Eliminar luces", GUILayout.MaxWidth (160))) {
 			foreach (GameObject g in GameObject.FindObjectsOfType(typeof(GameObject))) if (g.layer == LayerMask.NameToLayer("ROCHE_LUZ"))
 				DestroyImmediate (g);
 		}
 		GUILayout.FlexibleSpace();
 		EditorGUILayout.EndHorizontal ();
-		
-		GUILayout.Space (10);
-		GUILayout.EndVertical ();
-		
-		// Lightmap generation
-		EditorGUILayout.BeginVertical ("Box");
-		EditorGUILayout.LabelField ("2- MAPAS DE ILUMINACIÓN", EditorStyles.boldLabel);
-		GUILayout.Space(5);
-		
-		// Quality Level
-		GUILayout.BeginHorizontal ();
-		GUILayout.Space (20);
-		EditorGUILayout.LabelField ("Selecciona el nivel de calidad.", EditorStyles.wordWrappedLabel);
-		GUILayout.Space (20);
-		EditorGUILayout.EndHorizontal ();
-		
-		GUILayout.Space(5);
-		
+		EditorGUILayout.HelpBox("Elige un nivel de calidad para la generacion de mapas de luz.",MessageType.Info);
 		// Buttons for Lightmap Generation
 		GUILayout.BeginHorizontal ();
 		GUILayout.FlexibleSpace();
-		if (GUILayout.Button ("ALTO", GUILayout.MaxWidth (80))) {
+		if (GUILayout.Button ("Alto", GUILayout.MaxWidth (80))) {
 			GameObject[] gs = GameObject.FindSceneObjectsOfType (typeof(GameObject)) as GameObject[];
 			foreach (GameObject g in gs)
 			{
@@ -1238,7 +858,7 @@ public class ROCHE : EditorWindow
 			LightmapEditorSettings.quality = LightmapBakeQuality.High;
 			Lightmapping.BakeAsync ();
 		}
-		if (GUILayout.Button ("MEDIO", GUILayout.MaxWidth (80))) {
+		if (GUILayout.Button ("Medio", GUILayout.MaxWidth (80))) {
 			GameObject[] gs = GameObject.FindSceneObjectsOfType (typeof(GameObject)) as GameObject[];
 			foreach (GameObject g in gs)
 			{
@@ -1253,7 +873,7 @@ public class ROCHE : EditorWindow
 			LightmapEditorSettings.quality = LightmapBakeQuality.High;
 			Lightmapping.BakeAsync ();
 		}
-		if (GUILayout.Button ("BAJO", GUILayout.MaxWidth (80))) {
+		if (GUILayout.Button ("Bajo", GUILayout.MaxWidth (80))) {
 			GameObject[] gs = GameObject.FindSceneObjectsOfType (typeof(GameObject)) as GameObject[];
 			foreach (GameObject g in gs)
 			{
@@ -1267,322 +887,1251 @@ public class ROCHE : EditorWindow
 		GUILayout.FlexibleSpace();
 		
 		EditorGUILayout.EndHorizontal ();
-		GUILayout.Space(5);
-		GUILayout.EndVertical ();
-		GUILayout.EndScrollView ();
+		GUILayout.Space(10);
+
+		EditorGUILayout.LabelField("Exportar diseño", EditorStyles.boldLabel);
+		EditorGUILayout.HelpBox("Permite exportar la escena en un paquete .unitypackage para su posterior uso.",MessageType.Info);
+		GUILayout.BeginHorizontal ();
+		GUILayout.FlexibleSpace();
+		if (GUILayout.Button ("Exportar", GUILayout.MaxWidth (160))) {
+			bool success = EditorApplication.SaveScene();
+			if (success == false) return;
+			string pathScene = EditorApplication.currentScene;
+			//String pathToSave = "Assets/ROCHE/Proyectos/" + EditorApplication.currentScene;
+			Debug.Log (pathScene);
+			AssetDatabase.ExportPackage(pathScene, pathScene + ".unitypackage", ExportPackageOptions.Interactive | ExportPackageOptions.Recurse | ExportPackageOptions.IncludeLibraryAssets|ExportPackageOptions.IncludeDependencies );
+		}
+		GUILayout.FlexibleSpace();
+		EditorGUILayout.EndHorizontal ();
+
+		GUILayout.EndVertical();
+		EditorGUILayout.EndScrollView ();
 	}
-	
-	// "Exportado" tab contents
-	private void ExportTab ()
+
+	#endregion
+
+	#region App Tab
+
+	private void TabApp()
 	{
-		// Vertical Scrollbar
-		scrollPos = GUILayout.BeginScrollView (scrollPos);
 		
-		// ROCHE Header Icon
-		DrawRocheIconBox();	
-		
-		// "INFORMACIÓN" Box
-		EditorGUILayout.BeginVertical ("Box");
-		EditorGUILayout.LabelField ("1- INFORMACIÓN", EditorStyles.boldLabel);
-		
-		// Nº objetos
-		#pragma warning disable 0219
-		int numEdif = sceneBuilding.transform.childCount;
-		int numMobi = furnitureContainer.transform.childCount;
-		int numLuces = 0;
-		GetNumGameObjects(lightContainer,ref numLuces);
-
-		int numSelected = 0;
-		foreach (Transform g in Selection.transforms)
-		{
-			if (g.gameObject.layer == LayerMask.NameToLayer("ROCHE")) continue;
-			numSelected++;
-		}
-		int numTotal = numEdif + numMobi + numLuces;		
-		#pragma warning restore 0219
-		
-		EditorGUILayout.BeginHorizontal();
-		GUILayout.Space(20);
-		EditorGUILayout.LabelField ("Nº total de objetos:", EditorStyles.boldLabel);
-		GUILayout.FlexibleSpace();
-		EditorGUILayout.LabelField (numTotal.ToString(), EditorStyles.label, GUILayout.MinWidth(30));
-		GUILayout.Space(20);
-		EditorGUILayout.EndHorizontal ();
-		
-		EditorGUILayout.BeginHorizontal();
-		GUILayout.Space(20);
-		EditorGUILayout.LabelField ("Nº de objetos de Edificio:", EditorStyles.boldLabel);
-		GUILayout.FlexibleSpace();
-		EditorGUILayout.LabelField (numEdif.ToString(), EditorStyles.label, GUILayout.MinWidth(30));
-		GUILayout.Space(20);
-		EditorGUILayout.EndHorizontal ();
-		
-		EditorGUILayout.BeginHorizontal();
-		GUILayout.Space(20);
-		EditorGUILayout.LabelField ("Nº de objetos de Mobiliario:", EditorStyles.boldLabel);
-		GUILayout.FlexibleSpace();
-		EditorGUILayout.LabelField (numMobi.ToString(), EditorStyles.label, GUILayout.MinWidth(30));
-		GUILayout.Space(20);
-		EditorGUILayout.EndHorizontal ();
-		
-		EditorGUILayout.BeginHorizontal();
-		GUILayout.Space(20);
-		EditorGUILayout.LabelField ("Nº de Luces:", EditorStyles.boldLabel);
-		GUILayout.FlexibleSpace();
-		EditorGUILayout.LabelField (numLuces.ToString(), EditorStyles.label, GUILayout.MinWidth(30));
-		GUILayout.Space(20);
-		EditorGUILayout.EndHorizontal ();
-		
-		EditorGUILayout.BeginHorizontal();
-		GUILayout.Space(20);
-		EditorGUILayout.LabelField ("Nº de objetos seleccionados:", EditorStyles.boldLabel);
-		GUILayout.FlexibleSpace();
-		EditorGUILayout.LabelField (numSelected.ToString(), EditorStyles.label, GUILayout.MinWidth(30));
-		GUILayout.Space(20);
-		EditorGUILayout.EndHorizontal ();
-		
-		GUILayout.Space(5);
-				
-		GUILayout.EndVertical();
-		
-		// Edit velocity values
-		EditorGUILayout.BeginVertical ("Box");
-		EditorGUILayout.LabelField ("2- CONTROL", EditorStyles.boldLabel);
-		
-		GameObject camS = GameObject.Find("CameraSystem") as GameObject;
-		CameraOrbit orbit = camS.GetComponent<CameraOrbit>();
-		
-		EditorGUILayout.BeginHorizontal();
-		GUILayout.Space(20);
-		EditorGUILayout.LabelField ("Factor vuelo Orbit:", EditorStyles.boldLabel);
-		GUILayout.FlexibleSpace();
-		orbit.spanSpeed = Int32.Parse( EditorGUILayout.TextField (orbit.spanSpeed.ToString(), EditorStyles.numberField, GUILayout.MinWidth(30)));
-		GUILayout.Space(20);
-		EditorGUILayout.EndHorizontal ();
-		
-		EditorGUILayout.BeginHorizontal();
-		GUILayout.Space(20);
-		EditorGUILayout.LabelField ("Factor giro eje X Orbit:", EditorStyles.boldLabel);
-		GUILayout.FlexibleSpace();
-		orbit.xSpeed = Int32.Parse(EditorGUILayout.TextField (orbit.xSpeed.ToString(), EditorStyles.numberField, GUILayout.MinWidth(30)));
-		GUILayout.Space(20);
-		EditorGUILayout.EndHorizontal ();
-		
-		EditorGUILayout.BeginHorizontal();
-		GUILayout.Space(20);
-		EditorGUILayout.LabelField ("Factor giro eje Y Orbit:", EditorStyles.boldLabel);
-		GUILayout.FlexibleSpace();
-		orbit.ySpeed = Int32.Parse(EditorGUILayout.TextField (orbit.ySpeed.ToString(), EditorStyles.numberField, GUILayout.MinWidth(30)));
-		GUILayout.Space(20);
-		EditorGUILayout.EndHorizontal ();
-		
-		EditorGUILayout.BeginHorizontal();
-		GUILayout.Space(20);
-		EditorGUILayout.LabelField ("Factor zoom Orbit:", EditorStyles.boldLabel);
-		GUILayout.FlexibleSpace();
-		orbit.speedZoom = Int32.Parse(EditorGUILayout.TextField (orbit.speedZoom.ToString(), EditorStyles.numberField, GUILayout.MinWidth(30)));
-		GUILayout.Space(20);
-		EditorGUILayout.EndHorizontal ();
-		
-		EditorUtility.SetDirty(orbit);
-		
-		MouseLook mLook = camS.GetComponent<MouseLook>();
-		
-		EditorGUILayout.BeginHorizontal();
-		GUILayout.Space(20);
-		EditorGUILayout.LabelField ("Factor Giro X Walk:", EditorStyles.boldLabel);
-		GUILayout.FlexibleSpace();
-		mLook.sensitivityX = Int32.Parse(EditorGUILayout.TextField (mLook.sensitivityX.ToString(), EditorStyles.numberField, GUILayout.MinWidth(30)));
-		GUILayout.Space(20);
-		EditorGUILayout.EndHorizontal ();
-		
-		EditorGUILayout.BeginHorizontal();
-		GUILayout.Space(20);
-		EditorGUILayout.LabelField ("Factor Giro Y Walk:", EditorStyles.boldLabel);
-		GUILayout.FlexibleSpace();
-		mLook.sensitivityY = Int32.Parse(EditorGUILayout.TextField (mLook.sensitivityY.ToString(), EditorStyles.numberField, GUILayout.MinWidth(30)));
-		GUILayout.Space(20);
-		EditorGUILayout.EndHorizontal ();
-		EditorUtility.SetDirty(mLook);
-		
-		GUILayout.Space(5);
-				
-		GUILayout.EndVertical();
-				
-		EditorGUILayout.BeginVertical ("Box");
-		EditorGUILayout.LabelField ("3- EXPORTAR", EditorStyles.boldLabel);
-
-		GUILayout.Space(5);
-		
-		// Export Build
-		GUILayout.BeginHorizontal ();
-		GUILayout.FlexibleSpace();
-		
-		if (GUILayout.Button("Escritorio", GUILayout.Width(200)))
-		{
-			SetDefaultExportParams();
-			GameObject r = GameObject.Find("_ROCHE") as GameObject;
-			ROCHEScript rScript = r.GetComponent<ROCHEScript>();
-			rScript.buildType = ROCHEScript.BuildType.Desktop;
-			EditorUtility.SetDirty(rScript);
-
-			EditorApplication.SaveCurrentSceneIfUserWantsTo();
-			
-			EditorBuildSettingsScene[] scenes = EditorBuildSettings.scenes;
-			EditorBuildSettingsScene[] newSettings = new EditorBuildSettingsScene[1]; 
-			System.Array.Copy(scenes, newSettings, 0);
-			EditorBuildSettingsScene sceneToAdd = new EditorBuildSettingsScene(EditorApplication.currentScene, true); 
-			newSettings[0] = sceneToAdd;
-			EditorBuildSettings.scenes = newSettings;
-			
-			string[] scenesToAdd = new string[1];
-			scenesToAdd[0] = EditorApplication.currentScene;
-			
-			string exportPath = EditorUtility.SaveFolderPanel("Escoge la carpeta de destino", "", "");
-			
-			string finalPath = exportPath + "/ROCHE.exe";
-
-			Debug.Log("Exporting to: " + finalPath);
-			BuildPipeline.BuildPlayer(scenesToAdd,finalPath ,BuildTarget.StandaloneWindows,BuildOptions.ShowBuiltPlayer);
-			return;
-		}
-		GUILayout.FlexibleSpace();
-		EditorGUILayout.EndHorizontal ();
-		
-		GUILayout.Space(5);
-		
-		GUILayout.BeginHorizontal ();
-		GUILayout.FlexibleSpace();
-		
-		if (GUILayout.Button("Showroom", GUILayout.Width(200)))
-		{
-			SetDefaultExportParams();
-			GameObject r = GameObject.Find("_ROCHE") as GameObject;
-			ROCHEScript rScript = r.GetComponent<ROCHEScript>();
-			rScript.buildType = ROCHEScript.BuildType.Kinect;
-			EditorUtility.SetDirty(rScript);
-
-			string kinectPath = Application.dataPath + "Kinect/";
-			kinectPath = kinectPath.Replace("Assets",""); 
-			Debug.Log("Kinect Path = " + kinectPath);
-//			string kinectPath = EditorUtility.SaveFolderPanel("Escoge la localización del App Kinect", "", "");
-			string exportPath = EditorUtility.SaveFolderPanel("Escoge la carpeta de destino", "", "");
-			
-			string finalPath = exportPath + "/ROCHE_Showroom.exe";
-			
-			EditorApplication.SaveCurrentSceneIfUserWantsTo();
-			
-			EditorBuildSettingsScene[] scenes = EditorBuildSettings.scenes;
-			EditorBuildSettingsScene[] newSettings = new EditorBuildSettingsScene[1]; 
-			System.Array.Copy(scenes, newSettings, 0);
-			EditorBuildSettingsScene sceneToAdd = new EditorBuildSettingsScene(EditorApplication.currentScene, true); 
-			newSettings[0] = sceneToAdd;
-			EditorBuildSettings.scenes = newSettings;
-			
-			string[] scenesToAdd = new string[1];
-			scenesToAdd[0] = EditorApplication.currentScene;
-
-			Debug.Log("Exporting to: " + finalPath);
-			BuildPipeline.BuildPlayer(scenesToAdd,finalPath,BuildTarget.StandaloneWindows,BuildOptions.ShowBuiltPlayer);
-
-			FileUtil.CopyFileOrDirectory(kinectPath, exportPath + "/ROCHE_Showroom" + "_Data/Kinect");
-			return;
-		}
-		GUILayout.FlexibleSpace();
-		EditorGUILayout.EndHorizontal ();
-		
-		GUILayout.Space(5);
-        GUILayout.BeginHorizontal();
-        GUILayout.FlexibleSpace();
-
-        if (GUILayout.Button("Monotouch", GUILayout.Width(200)))
-        {
-			SetDefaultExportParams();
-            GameObject r = GameObject.Find("_ROCHE") as GameObject;
-            ROCHEScript rScript = r.GetComponent<ROCHEScript>();
-            rScript.buildType = ROCHEScript.BuildType.Monotouch;
-            EditorUtility.SetDirty(rScript);
-
-            EditorApplication.SaveCurrentSceneIfUserWantsTo();
-
-            EditorBuildSettingsScene[] scenes = EditorBuildSettings.scenes;
-            EditorBuildSettingsScene[] newSettings = new EditorBuildSettingsScene[1];
-            System.Array.Copy(scenes, newSettings, 0);
-            EditorBuildSettingsScene sceneToAdd = new EditorBuildSettingsScene(EditorApplication.currentScene, true);
-            newSettings[0] = sceneToAdd;
-            EditorBuildSettings.scenes = newSettings;
-
-            string[] scenesToAdd = new string[1];
-            scenesToAdd[0] = EditorApplication.currentScene;
-
-            string exportPath = EditorUtility.SaveFolderPanel("Escoge la carpeta de destino", "", "");
-
-            string finalPath = exportPath + "/ROCHE_Monotouch.exe";
-
-            Debug.Log("Exporting to: " + finalPath);
-            BuildPipeline.BuildPlayer(scenesToAdd, finalPath, BuildTarget.StandaloneWindows, BuildOptions.ShowBuiltPlayer);
-            return;
-        }
-        GUILayout.FlexibleSpace();
-        EditorGUILayout.EndHorizontal();
-        GUILayout.Space(5);
-
-		// Export Build
-		GUILayout.BeginHorizontal ();
-		GUILayout.FlexibleSpace();
-		
-		if (GUILayout.Button("Oculus Rift", GUILayout.Width(200)))
-		{
-			SetDefaultExportParams();
-			PlayerSettings.defaultIsFullScreen = true;
-			//PlayerSettings.displayResolutionDialog = ResolutionDialogSetting.Disabled;
-			PlayerSettings.defaultScreenWidth = 1280;
-			PlayerSettings.defaultScreenHeight = 800;
-
-			GameObject r = GameObject.Find("_ROCHE") as GameObject;
-			ROCHEScript rScript = r.GetComponent<ROCHEScript>();
-			rScript.buildType = ROCHEScript.BuildType.OVR;
-			EditorUtility.SetDirty(rScript);
-			
-			EditorApplication.SaveCurrentSceneIfUserWantsTo();
-			
-			EditorBuildSettingsScene[] scenes = EditorBuildSettings.scenes;
-			EditorBuildSettingsScene[] newSettings = new EditorBuildSettingsScene[1]; 
-			System.Array.Copy(scenes, newSettings, 0);
-			EditorBuildSettingsScene sceneToAdd = new EditorBuildSettingsScene(EditorApplication.currentScene, true); 
-			newSettings[0] = sceneToAdd;
-			EditorBuildSettings.scenes = newSettings;
-			
-			string[] scenesToAdd = new string[1];
-			scenesToAdd[0] = EditorApplication.currentScene;
-			
-			string exportPath = EditorUtility.SaveFolderPanel("Escoge la carpeta de destino", "", "");
-			
-			string finalPath = exportPath + "/ROCHE_OVR.exe";
-			
-			Debug.Log("Exporting to: " + finalPath);
-			BuildPipeline.BuildPlayer(scenesToAdd,finalPath ,BuildTarget.StandaloneWindows,BuildOptions.ShowBuiltPlayer);
-			return;
-		}
-
-		GUILayout.FlexibleSpace();
-
-		EditorGUILayout.EndHorizontal ();
-		GUILayout.Space(5);
-		GUILayout.EndVertical ();
-		
-		GUILayout.Space(30);
-		
-		EditorGUILayout.BeginVertical ("Box");
-		EditorGUILayout.BeginHorizontal();
-		GUILayout.Space (20);
-		EditorGUILayout.LabelField("Para cualquier incidencia técnica enviar un e-mail a: info@mobilemediacontent.com", EditorStyles.wordWrappedLabel);
-		GUILayout.Space (20);
-		EditorGUILayout.EndHorizontal ();
-
-		GUILayout.EndVertical();
-		GUILayout.EndScrollView();
 	}
+
+	#endregion
+
+	#region Export Tab
+
+	private void TabExport()
+	{
+		
+	}
+
+	#endregion
+
+//	// "Escena" tab contents
+//	private void SceneTab ()
+//	{
+//		// Vertical Scrollbar
+//		scrollPos = EditorGUILayout.BeginScrollView (scrollPos);
+//		
+//		// ROCHE Header Icon
+//		DrawRocheIconBox();		
+//		
+//		// "EDIFICIO" Box
+//		EditorGUILayout.BeginVertical ("Box");
+//		EditorGUILayout.LabelField ("1 - EDIFICIO", EditorStyles.boldLabel);
+//		
+//		// If there's no Building GameObject on scene, ask to import it
+//		if (sceneBuilding == null) 
+//		{
+//			GUILayout.BeginHorizontal ();
+//			GUILayout.Space (20);
+//			GUILayout.TextArea ("1.1 - Importación de FBX",EditorStyles.boldLabel);
+//			GUILayout.Space (10);
+//			EditorGUILayout.EndHorizontal ();
+//			
+//			EditorGUILayout.BeginHorizontal();
+//			GUILayout.Space (40);
+//			EditorGUILayout.LabelField ("Arrastra tu fichero FBX a la carpeta \"/ROCHE/Inicio/\".", EditorStyles.wordWrappedLabel);
+//			GUILayout.Space (20);
+//			EditorGUILayout.EndHorizontal();
+//			
+//			GUILayout.BeginHorizontal ();
+//			GUILayout.Space (20);
+//			GUILayout.TextArea ("1.2 - Importar a escena",EditorStyles.boldLabel);
+//			GUILayout.Space (10);
+//			EditorGUILayout.EndHorizontal ();
+//			
+//			EditorGUILayout.BeginHorizontal();
+//			GUILayout.Space (40);
+//			EditorGUILayout.LabelField ("Arrastra el Prefab generado al siguiente recuadro.", EditorStyles.wordWrappedLabel);
+//			GUILayout.Space (20);
+//			EditorGUILayout.EndHorizontal();
+//			GUILayout.Space (10);
+//			EditorGUILayout.BeginHorizontal();
+//			GUILayout.Space (40);			
+//			GameObject pObj = null;
+//			pObj = EditorGUILayout.ObjectField(pObj,typeof(GameObject),false,GUILayout.MinWidth(50),GUILayout.Height(50)) as GameObject;
+//			if (pObj != null && (PrefabUtility.GetPrefabType(pObj) == PrefabType.ModelPrefab || PrefabUtility.GetPrefabType(pObj) == PrefabType.Prefab))
+//			{
+//				if (sceneBuilding != null) GameObject.DestroyImmediate(sceneBuilding); 
+//				// Instantiate it, add layers+colliders and reposition it at the center
+//				sceneBuilding = GameObject.Instantiate(pObj) as GameObject;
+//				sceneBuilding.name = "Edificio";
+//
+//				SetLayerRecursively(sceneBuilding,"ROCHE_EDIFICIO");
+//				sceneBuilding.layer = LayerMask.NameToLayer("ROCHE");
+//				SetCollisionsRecursively(sceneBuilding);
+//				SetStaticRecursively(sceneBuilding);
+//				sceneBuilding.transform.position = new Vector3 (0, 0, 0);
+//				
+//				// Get building real bounds using children renderers
+//				CalculateBuildingBounds();
+//				CenterCameraOnGameObject(sceneBuilding);
+//				toolbarPos = TOOLBAR_POS.SCENE;
+//				pObj = null;
+//			}
+//			else pObj = null;
+//			
+////			GUILayout.Box("",GUILayout.Width(2000),GUILayout.MinWidth(40),GUILayout.Height(40));
+//			GUILayout.Space (20);GUILayout.FlexibleSpace();
+//			EditorGUILayout.EndHorizontal();
+//			
+//			GUILayout.Space (5);
+//			GUILayout.EndVertical ();
+//			GUILayout.EndScrollView ();
+//			return;
+//		}
+//
+//		// We have a Building GameObject, show the remaining steps
+//		// Floor Plan option
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.Space (20);
+//		EditorGUILayout.LabelField ("1.1 - Suelo", EditorStyles.boldLabel);
+//		GUILayout.Space (20);
+//		EditorGUILayout.EndHorizontal();
+//
+//		GameObject suelo = GameObject.Find("Suelo");
+//		GUILayout.Space(5);
+//
+//		if (suelo == null)
+//		{
+//			GUILayout.BeginHorizontal ();
+//			GUILayout.Space (40);
+//			EditorGUILayout.LabelField ("Objeto 'Suelo' no encontrado.", EditorStyles.label);
+//			GUILayout.Space (20);
+//			EditorGUILayout.EndHorizontal();
+//		}
+//		else
+//		{
+//			suelo.renderer.sharedMaterial.shader = Shader.Find("ROCHE/Detail");
+//
+//			EditorGUILayout.BeginHorizontal();
+//			GUILayout.FlexibleSpace();
+//			EditorGUILayout.BeginVertical();
+//
+//			EditorGUILayout.LabelField("Plano CAD");
+//			auxFloorCadTexture = EditorGUILayout.ObjectField(auxFloorCadTexture,
+//		                                              typeof(Texture2D), false, GUILayout.Width(80), GUILayout.Height(80)) as Texture2D;
+//			if(GUILayout.Button("Aplicar", GUILayout.MaxWidth(80)))
+//			{
+//				suelo.renderer.sharedMaterial.SetTexture("_Detail", auxFloorCadTexture);	
+//				suelo.renderer.sharedMaterial.SetFloat("_DetailActive",1);
+//			}
+//	
+//			EditorGUILayout.EndVertical();
+//			GUILayout.FlexibleSpace();
+//			EditorGUILayout.EndHorizontal();
+//			GUILayout.Space(10);
+//			EditorGUILayout.BeginHorizontal();
+//			GUILayout.FlexibleSpace();
+//			EditorGUILayout.BeginVertical();
+//			EditorGUILayout.LabelField("Textura Suelo");
+//			Texture tex = suelo.renderer.sharedMaterial.mainTexture;
+//			if (auxFloorTexture == null && tex != null) auxFloorTexture = (Texture2D) tex;
+//			auxFloorTexture = EditorGUILayout.ObjectField(auxFloorTexture,
+//			                                              typeof(Texture2D), false, GUILayout.Width(80), GUILayout.Height(80)) as Texture2D;
+//			if(GUILayout.Button("Aplicar", GUILayout.MaxWidth(80)))
+//			{
+//				suelo.renderer.sharedMaterial.mainTexture = auxFloorTexture;	
+//				suelo.renderer.sharedMaterial.SetFloat("_DetailActive",0);
+//			}
+//			EditorGUILayout.EndVertical();
+//			GUILayout.FlexibleSpace();
+//			EditorGUILayout.EndHorizontal();
+//
+//		}
+//
+//
+// 		GUILayout.Space(5);
+//
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.Space (20);
+//		EditorGUILayout.LabelField ("1.2 - Paredes", EditorStyles.boldLabel);
+//		GUILayout.Space (20);
+//		EditorGUILayout.EndHorizontal();
+//
+//		GameObject pared = GameObject.Find("Paredes");
+//		GUILayout.Space(5);
+//
+//		if (pared == null)
+//		{
+//			GUILayout.BeginHorizontal ();
+//			GUILayout.Space (40);
+//			EditorGUILayout.LabelField ("Objeto 'Paredes' no encontrado.", EditorStyles.label);
+//			GUILayout.Space (20);
+//			EditorGUILayout.EndHorizontal();
+//		}
+//		else
+//		{
+//			EditorGUILayout.BeginHorizontal();
+//			GUILayout.FlexibleSpace();
+//			EditorGUILayout.BeginVertical();
+//			EditorGUILayout.LabelField("Textura Paredes");
+//			Texture tex = pared.renderer.sharedMaterial.mainTexture;
+//			if (auxWallTexture == null && tex != null) auxWallTexture = (Texture2D) tex;
+//			auxWallTexture = EditorGUILayout.ObjectField(auxWallTexture,
+//			                                              typeof(Texture2D), false, GUILayout.Width(80), GUILayout.Height(80)) as Texture2D;
+//			if(GUILayout.Button("Aplicar", GUILayout.MaxWidth(80)))
+//			{
+//				pared.renderer.sharedMaterial.mainTextureScale = new Vector2 (1, 1);
+//				pared.renderer.sharedMaterial.mainTextureOffset = new Vector2 (0, 0);
+//				pared.renderer.sharedMaterial.mainTexture = auxWallTexture;	
+//			}
+//			EditorGUILayout.EndVertical();
+//			GUILayout.FlexibleSpace();
+//			EditorGUILayout.EndHorizontal();
+//		}
+// 		GUILayout.Space(5);
+//
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.Space (20);
+//		EditorGUILayout.LabelField ("1.3 - Techo", EditorStyles.boldLabel);
+//		GUILayout.Space (20);
+//		EditorGUILayout.EndHorizontal();
+//
+//		GameObject techo = GameObject.Find("Techo");
+//		GUILayout.Space(5);
+//
+//		if (techo == null)
+//		{
+//			GUILayout.BeginHorizontal ();
+//			GUILayout.Space (40);
+//			EditorGUILayout.LabelField ("Objeto 'Techo' no encontrado.", EditorStyles.label);
+//			GUILayout.Space (20);
+//			EditorGUILayout.EndHorizontal();
+//		}
+//		else
+//		{
+//			EditorGUILayout.BeginHorizontal();
+//			GUILayout.FlexibleSpace();
+//			EditorGUILayout.BeginVertical();
+//			EditorGUILayout.LabelField("Textura Techo");
+//			Texture tex = techo.renderer.sharedMaterial.mainTexture;
+//			if (auxCeilingTexture == null && tex != null) auxCeilingTexture = (Texture2D) tex;
+//			auxCeilingTexture = EditorGUILayout.ObjectField(auxCeilingTexture,
+//			                                              typeof(Texture2D), false, GUILayout.Width(80), GUILayout.Height(80)) as Texture2D;
+//			if(GUILayout.Button("Aplicar", GUILayout.MaxWidth(80)))
+//			{
+//				techo.renderer.sharedMaterial.mainTextureScale = new Vector2 (1, 1);
+//				techo.renderer.sharedMaterial.mainTextureOffset = new Vector2 (0, 0);
+//				techo.renderer.sharedMaterial.mainTexture = auxCeilingTexture;	
+//			}
+//			EditorGUILayout.EndVertical();
+//			GUILayout.FlexibleSpace();
+//			EditorGUILayout.EndHorizontal();
+//		}
+//		GUILayout.Space(5);
+//
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.Space (20);
+//		EditorGUILayout.LabelField ("1.4 - Eliminar edificio", EditorStyles.boldLabel);
+//		GUILayout.Space (20);
+//		EditorGUILayout.EndHorizontal();
+//		GUILayout.Space(5);
+//
+//		EditorGUILayout.BeginHorizontal();
+//		GUILayout.Space (40);
+//		EditorGUILayout.LabelField ("Eliminar el Edificio actual.", EditorStyles.wordWrappedLabel);
+//		GUILayout.Space (20);
+//		EditorGUILayout.EndHorizontal();
+//		
+//		GUILayout.Space(5);
+//		
+//		// Commute between CAD Floor Plan and original floor Texture
+//		// Requires the Building GameObject to have a "Floor " child
+//		// And requires the CAD Floor Plan Texture and original Texture
+//		EditorGUILayout.BeginHorizontal();
+//		GUILayout.FlexibleSpace();
+//		if (GUILayout.Button ("ELIMINAR", GUILayout.MaxWidth (80))) {
+//			GameObject.DestroyImmediate(sceneBuilding);			
+//		}
+//		GUILayout.FlexibleSpace();
+//		EditorGUILayout.EndHorizontal();
+//				
+//		GUILayout.Space (5);
+//		
+//		
+//		GUILayout.EndVertical ();
+//
+//        // "MOBILIARIO" Box
+//		EditorGUILayout.BeginVertical ("Box");
+//		EditorGUILayout.LabelField("2 - MOBILIARIO", EditorStyles.boldLabel);
+//		
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.Space (20);
+//		EditorGUILayout.LabelField ("2.1 - Importar mobiliario", EditorStyles.boldLabel);
+//		GUILayout.Space (20);
+//		EditorGUILayout.EndHorizontal();
+//		
+//		EditorGUILayout.BeginHorizontal();
+//		GUILayout.Space (40);
+//		EditorGUILayout.LabelField ("Arrastra los objetos directamente a la escena.", EditorStyles.wordWrappedLabel);
+//		GUILayout.Space (20);
+//		EditorGUILayout.EndHorizontal();
+//
+//		EditorGUILayout.BeginHorizontal();
+//		GUILayout.Space (20);
+//		EditorGUILayout.LabelField ("2.2 - Posicionamiento", EditorStyles.boldLabel);
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		EditorGUILayout.BeginHorizontal();
+//		GUILayout.Space (40);
+//		EditorGUILayout.LabelField("Usa el ratón para mover los objetos en la escena o usa las siguientes opciones.", EditorStyles.wordWrappedLabel);
+//		GUILayout.Space (20);
+//		EditorGUILayout.EndHorizontal();
+//		
+//		GUILayout.Space(5);
+//		
+//		// Center GameObject at the center of the Building GameObject
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.FlexibleSpace();
+//		if (GUILayout.Button ("CENTRAR EN EDIFICIO", GUILayout.MaxWidth (180))) {
+//			Undo.RegisterSceneUndo ("Move to Center");
+//			if (Selection.transforms.Length == 0) 
+//			{
+//				EditorUtility.DisplayDialog ("Error", "No se ha seleccionado ningún objeto.", "Aceptar");
+//				return;
+//			}
+//			foreach (Transform t in Selection.transforms)
+//			{
+//				PlaceOnFloor(t, true);
+//			}
+//		}
+//		GUILayout.FlexibleSpace();
+//		EditorGUILayout.EndHorizontal ();
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.FlexibleSpace();
+//		if (GUILayout.Button ("COLOCAR SOBRE EL SUELO", GUILayout.MaxWidth (180))) {
+//			Undo.RegisterSceneUndo ("Put on floor");
+//			if (Selection.transforms.Length == 0) 
+//			{
+//				EditorUtility.DisplayDialog ("Error", "No se ha seleccionado ningún objeto.", "Aceptar");
+//				return;
+//			}
+//			foreach (Transform t in Selection.transforms)
+//			{
+//				PlaceOnFloor(t, false);
+//			}
+//		}
+//		GUILayout.FlexibleSpace();
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.FlexibleSpace();
+//		if (GUILayout.Button ("APOYAR CONTRA LA PARED", GUILayout.MaxWidth (180))) {
+//			Undo.RegisterSceneUndo ("Put on wall");
+//			if (Selection.transforms.Length == 0) 
+//			{
+//				EditorUtility.DisplayDialog ("Error", "No se ha seleccionado ningún objeto.", "Aceptar");
+//				return;
+//			}
+//
+//			int layerMask = (1 << 9);
+//			foreach (Transform tr in Selection.transforms)
+//			{
+//				Transform t = GetParentFurnitureTransform(tr);
+//				RaycastHit hit;
+//				Bounds b = t.renderer.bounds;
+//				Vector3 pos = Vector3.zero;
+//				float best_dist = Mathf.Infinity;
+//
+//				if (Physics.Raycast(new Ray(b.center,Vector3.left),out hit,Mathf.Infinity,layerMask))
+//				{
+//					if (hit.distance < best_dist && hit.distance > 1.0f)
+//					{
+//						best_dist = hit.distance;
+//						pos = new Vector3(hit.point.x + b.size.x/2, t.position.y, t.position.z);
+//					}
+//				}
+//				if (Physics.Raycast(new Ray(b.center,Vector3.right),out hit,Mathf.Infinity,layerMask))
+//				{
+//					if (hit.distance < best_dist && hit.distance > 1.0f)
+//					{
+//						best_dist = hit.distance;
+//						pos = new Vector3(hit.point.x - b.size.x/2, t.position.y, t.position.z);
+//					}
+//				}
+//				if (Physics.Raycast(new Ray(b.center,Vector3.forward),out hit,Mathf.Infinity,layerMask))
+//				{
+//					if (hit.distance < best_dist && hit.distance > 1.0f)
+//					{
+//						best_dist = hit.distance;
+//						pos = new Vector3(t.position.x, t.position.y, hit.point.z - b.size.z/2);
+//					}
+//				}
+//				if (Physics.Raycast(new Ray(b.center,Vector3.back),out hit,Mathf.Infinity,layerMask))
+//				{
+//					if (hit.distance < best_dist && hit.distance > 1.0f)
+//					{
+//						best_dist = hit.distance;
+//						pos = new Vector3(t.position.x, t.position.y, hit.point.z + b.size.z/2);
+//					}
+//				}
+//				if (best_dist != Mathf.Infinity)
+//				{
+//					t.position = pos;
+//				}
+//
+//			}
+//		}
+//		GUILayout.FlexibleSpace();
+//		EditorGUILayout.EndHorizontal ();
+//
+//		
+//		GUILayout.Space(5);
+//		
+//		EditorGUILayout.BeginHorizontal();
+//		GUILayout.Space (20);
+//		EditorGUILayout.LabelField ("2.3 - Rotar", EditorStyles.boldLabel);
+//		GUILayout.Space (20);
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		GUILayout.Space(5);
+//		
+//		// Rotation Buttons
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.FlexibleSpace();
+//		if (GUILayout.Button ("ROTAR X", GUILayout.MaxWidth (80))) {
+//			Undo.RegisterUndo (Selection.activeGameObject, "RotateX");
+//			if (Selection.transforms.Length == 0) 
+//			{
+//				EditorUtility.DisplayDialog ("Error", "No se ha seleccionado ningún objeto.", "Aceptar");
+//				return;
+//			}
+//			foreach (Transform t in Selection.transforms)
+//				t.RotateAround(Vector3.right, (float)Math.PI/2.0f);
+//		}
+//
+//		if (GUILayout.Button ("ROTAR Y", GUILayout.MaxWidth (80))) {
+//			Undo.RegisterUndo (Selection.activeGameObject, "RotateY");
+//			if (Selection.transforms.Length == 0) 
+//			{
+//				EditorUtility.DisplayDialog ("Error", "No se ha seleccionado ningún objeto.", "Aceptar");
+//				return;
+//			}
+//			foreach (Transform t in Selection.transforms) t.RotateAround(Vector3.up, (float)Math.PI/2.0f);
+//		}
+//
+//		if (GUILayout.Button ("ROTAR Z", GUILayout.MaxWidth (80))) {
+//			Undo.RegisterUndo (Selection.activeGameObject, "RotateZ");
+//			if (Selection.transforms.Length == 0) 
+//			{
+//				EditorUtility.DisplayDialog ("Error", "No se ha seleccionado ningún objeto.", "Aceptar");
+//				return;
+//			}
+//			foreach (Transform t in Selection.transforms) t.RotateAround(Vector3.forward,(float)Math.PI/2.0f);
+//		}
+//		GUILayout.FlexibleSpace();
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		GUILayout.Space(5);
+//		
+//		EditorGUILayout.BeginHorizontal();
+//		GUILayout.Space (20);
+//		EditorGUILayout.LabelField("2.4 - Alinear", EditorStyles.boldLabel);
+//		GUILayout.Space (20);
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		GUILayout.Space(5);
+//		
+//		// Axis Alignment Buttons. They require to select a group of 2 or more objects
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.FlexibleSpace();
+//		if (GUILayout.Button ("ALINEAR X", GUILayout.MaxWidth (80))) {
+//			Undo.RegisterSceneUndo ("ALINEAR X");
+//			AlignGameObjects (0);
+//		}
+//		if (GUILayout.Button ("ALINEAR Y", GUILayout.MaxWidth (80))) {
+//			Undo.RegisterSceneUndo ("ALINEAR Y");
+//			AlignGameObjects (1);
+//		}
+//		if (GUILayout.Button ("ALINEAR Z", GUILayout.MaxWidth (80))) {
+//			Undo.RegisterSceneUndo ("ALINEAR Z");
+//			AlignGameObjects (2);
+//		}
+//		GUILayout.FlexibleSpace();
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		GUILayout.Space(5);
+//		
+//		EditorGUILayout.BeginHorizontal();
+//		GUILayout.Space (20);
+//		EditorGUILayout.LabelField ("2.5 - Sistema de colisiones", EditorStyles.boldLabel);
+//		GUILayout.Space (20);
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		GUILayout.Space(5);
+//		
+//		// View collisions on editor scene
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.Space (40);
+//		EditorGUILayout.LabelField ("Mostrar colisión del objeto seleccionado con otros objetos colisionables.", EditorStyles.wordWrappedLabel);
+//		GUILayout.Space (20);
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		GUILayout.Space(5);
+//		
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.FlexibleSpace();
+//		string buttonLabel = "ACTIVAR";
+//		if (viewCollisions) buttonLabel = "DESACTIVAR";
+//		if (GUILayout.Button (buttonLabel, GUILayout.MaxWidth (100))) 
+//		{
+//			Undo.RegisterSceneUndo ("ViewCollisions");
+//			viewCollisions = !viewCollisions;
+//		}
+//		GUILayout.FlexibleSpace();
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		GUILayout.Space (5);
+//		
+//				// View collisions on editor scene
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.Space (40);
+//		EditorGUILayout.LabelField ("Añadir colisiones a los objetos seleccionados.", EditorStyles.wordWrappedLabel);
+//		GUILayout.Space (20);
+//		EditorGUILayout.EndHorizontal ();
+//		GUILayout.Space (5);
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.FlexibleSpace();
+//		if (GUILayout.Button ("AÑADIR", GUILayout.MaxWidth (100))) 
+//		{
+//			Undo.RegisterSceneUndo ("AddCollisions");
+//			
+//			foreach (GameObject g in Selection.gameObjects) 
+//			{
+//				SetCollisionsRecursively(g);
+//			}
+//		}
+//		GUILayout.FlexibleSpace();
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		// View collisions on editor scene
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.Space (40);
+//		EditorGUILayout.LabelField ("Eliminar colisiones de los objetos seleccionados.", EditorStyles.wordWrappedLabel);
+//		GUILayout.Space (20);
+//		EditorGUILayout.EndHorizontal ();
+//		GUILayout.Space (5);
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.FlexibleSpace();
+//		if (GUILayout.Button ("ELIMINAR", GUILayout.MaxWidth (100))) 
+//		{
+//			Undo.RegisterSceneUndo ("DeleteCollisions");
+//			foreach (GameObject g in Selection.gameObjects) 
+//			{
+//				RemoveCollisionsRecursively(g);
+//			}
+//		}
+//		GUILayout.FlexibleSpace();
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		
+//		
+//		GUILayout.Space (5);
+//		EditorGUILayout.BeginHorizontal();
+//		GUILayout.Space (20);
+//		EditorGUILayout.LabelField("2.6 - Sobreescribir Original", EditorStyles.boldLabel);
+//		GUILayout.Space (20);
+//		EditorGUILayout.EndHorizontal ();
+//		GUILayout.Space(5);
+//		
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.Space (40);
+//		EditorGUILayout.LabelField ("Puedes aplicar las propiedades e información de este objeto al objeto original.", EditorStyles.wordWrappedLabel);
+//		GUILayout.Space (20);
+//		EditorGUILayout.EndHorizontal ();
+//		GUILayout.Space(5);
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.FlexibleSpace();
+//		if (GUILayout.Button ("MODIFICAR", GUILayout.MaxWidth (100))) {
+//			Undo.RegisterSceneUndo ("modify prefab");
+//			if (Selection.transforms.Length == 0) 
+//			{
+//				EditorUtility.DisplayDialog ("Error", "No se ha seleccionado ningún objeto.", "Aceptar");
+//				return;
+//			}
+//			foreach (Transform t in Selection.transforms)
+//			{
+//				PrefabUtility.ReplacePrefab(t.gameObject, PrefabUtility.GetPrefabParent(t.gameObject), ReplacePrefabOptions.ConnectToPrefab);
+//			}	
+//		}
+//		GUILayout.FlexibleSpace();
+//		EditorGUILayout.EndHorizontal ();
+//		GUILayout.Space(5);
+//		
+//		GUILayout.EndVertical ();
+//		
+//		
+//		if (Selection.activeGameObject == null || Selection.activeGameObject.layer != LayerMask.NameToLayer("ROCHE_MOBILIARIO"))
+//		{
+//			// "EDIFICIO" Box
+//			EditorGUILayout.BeginVertical ("Box");
+//			EditorGUILayout.LabelField ("3 - FICHA DEL OBJETO", EditorStyles.boldLabel);
+//			
+//			GUILayout.Space(5);
+//		
+//			// View collisions on editor scene
+//			GUILayout.BeginHorizontal ();
+//			GUILayout.Space (40);
+//			EditorGUILayout.LabelField("Selecciona un objeto de mobiliario para editar su ficha.", EditorStyles.wordWrappedLabel);
+//			GUILayout.Space (20);
+//			EditorGUILayout.EndHorizontal ();
+//			
+//			GUILayout.Space(5);
+//			
+//			GUILayout.EndVertical ();
+//		}
+//		else 
+//		{
+//			// Get the Ficha Component
+//			GameObject obj = Selection.activeGameObject;
+//			if (obj.transform.childCount == 0)
+//			{
+//				GameObject parent = obj.transform.parent.gameObject;
+//				if (parent.layer == LayerMask.NameToLayer("ROCHE_MOBILIARIO")) obj = parent;
+//			}
+//			Ficha ficha = obj.GetComponent<Ficha>();
+//			if (ficha == null) ficha = obj.AddComponent<Ficha>();
+//			
+//			// "EDIFICIO" Box
+//			EditorGUILayout.BeginVertical ("Box");
+//			EditorGUILayout.LabelField("3 - FICHA DEL OBJETO", EditorStyles.boldLabel);
+//			
+//			GUILayout.Space(5);
+//			
+//			EditorGUILayout.BeginHorizontal();
+//			GUILayout.Space(20);
+//			ficha.activar = EditorGUILayout.Toggle("MOSTRAR FICHA", ficha.activar, EditorStyles.toggle );
+//			GUILayout.Space (20);
+//			EditorGUILayout.EndHorizontal();
+//			
+//			EditorGUILayout.BeginHorizontal();
+//			GUILayout.Space(20);
+//			EditorGUILayout.LabelField ("Tag:", EditorStyles.boldLabel);
+//			GUILayout.Space(20);
+//			EditorGUILayout.EndHorizontal ();
+//			
+//			EditorGUILayout.BeginHorizontal();
+//			GUILayout.Space(40);
+//			ficha.tagName = GUILayout.TextField(ficha.tagName, 10);
+//			GUILayout.Space (20);
+//			EditorGUILayout.EndHorizontal();
+//			
+//			EditorGUILayout.BeginHorizontal();
+//			GUILayout.Space(20);
+//			EditorGUILayout.LabelField ("Nombre:", EditorStyles.boldLabel);
+//			GUILayout.Space(20);
+//			EditorGUILayout.EndHorizontal ();
+//			
+//			EditorGUILayout.BeginHorizontal();
+//			GUILayout.Space(40);
+//			ficha.nombre = GUILayout.TextField(ficha.nombre,60);
+//			GUILayout.Space (20);
+//			EditorGUILayout.EndHorizontal();
+//			
+//			EditorGUILayout.BeginHorizontal();
+//			GUILayout.Space(20);
+//			EditorGUILayout.LabelField ("Área:", EditorStyles.boldLabel);
+//			GUILayout.Space(20);
+//			EditorGUILayout.EndHorizontal ();
+//			
+//			EditorGUILayout.BeginHorizontal();
+//			GUILayout.Space(40);
+//			ficha.area = GUILayout.TextField(ficha.area, 60);
+//			GUILayout.Space (20);
+//			EditorGUILayout.EndHorizontal();
+//			
+//			EditorGUILayout.BeginHorizontal();
+//			GUILayout.Space(20);
+//			EditorGUILayout.LabelField("Descripción:", EditorStyles.boldLabel);
+//			GUILayout.Space(20);
+//			EditorGUILayout.EndHorizontal ();
+//			
+//			EditorGUILayout.BeginHorizontal();
+//			GUILayout.Space(40);
+//			ficha.descripcion = EditorGUILayout.TextArea(ficha.descripcion, GUILayout.MaxWidth(250));
+//			GUILayout.Space (20);
+//			EditorGUILayout.EndHorizontal();
+//			
+//			EditorGUILayout.BeginHorizontal();
+//			GUILayout.Space(20);
+//			EditorGUILayout.LabelField ("Propiedades:", EditorStyles.boldLabel);
+//			GUILayout.Space(20);
+//			EditorGUILayout.EndHorizontal ();
+//			
+//			EditorGUILayout.BeginHorizontal();
+//			GUILayout.Space(40);
+//			ficha.propiedades = EditorGUILayout.TextArea(ficha.propiedades, GUILayout.MaxWidth(250));
+//			GUILayout.Space (20);
+//			EditorGUILayout.EndHorizontal();
+//			
+//			EditorGUILayout.BeginHorizontal();
+//			GUILayout.Space(20);
+//			EditorGUILayout.LabelField ("Imagen:", EditorStyles.boldLabel);
+//			GUILayout.Space(20);
+//			EditorGUILayout.EndHorizontal ();
+//			
+//			EditorGUILayout.BeginHorizontal();
+//			GUILayout.Space(40);
+////			if (ficha.imagen == null) ficha.imagen = EditorGUIUtility.whiteTexture;
+//			ficha.imagen = EditorGUILayout.ObjectField(ficha.imagen,
+//                    typeof(Texture2D), false, GUILayout.Width(80), GUILayout.Height(80)) as Texture2D;
+//			GUILayout.Space (20);
+//			EditorGUILayout.EndHorizontal();
+//			
+//			GUILayout.Space(5);
+//			
+//			EditorUtility.SetDirty(ficha);
+//			
+//			GUILayout.EndVertical ();
+//		}
+//		
+//		EditorGUILayout.EndScrollView ();
+//	}
+//
+//	// "Iluminación" tab contents
+//	private void LightingTab ()
+//	{
+//		// Vertical Scrollbar
+//		scrollPos = GUILayout.BeginScrollView (scrollPos);
+//		
+//		// ROCHE Header Icon
+//		DrawRocheIconBox();	
+//		
+//		// "LUCES" Box
+//		EditorGUILayout.BeginVertical ("Box");
+//		EditorGUILayout.LabelField ("1- LUCES", EditorStyles.boldLabel);
+//		
+//		// Manual Positioning
+//		EditorGUILayout.BeginHorizontal();
+//		GUILayout.Space (20);
+//		EditorGUILayout.LabelField ("1.1 - Posicionamiento manual", EditorStyles.boldLabel);
+//		GUILayout.Space (20);
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		GUILayout.Space(5);
+//				
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.Space (40);
+//		EditorGUILayout.LabelField ("Utiliza los botones para crear un tipo de luz en la escena.", EditorStyles.wordWrappedLabel);
+//		GUILayout.Space (40);
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		GUILayout.Space(5);
+//		
+//		// Light types (prefabs)
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.FlexibleSpace();
+//		if (GUILayout.Button (YLightIconOne, GUILayout.MaxWidth (35), GUILayout.MaxHeight (35))) 
+//		{
+//			Undo.RegisterSceneUndo ("Light1");
+//			CreateLight(new Vector3(0,sceneBuildingBounds.center.y,0));
+//		}
+//		if (GUILayout.Button (YLightIconThree, GUILayout.MaxWidth (35), GUILayout.MaxHeight (35))) 
+//		{
+//			Undo.RegisterSceneUndo ("Light2");
+//			CreateLight(new Vector3(-4,sceneBuildingBounds.center.y,0));
+//			CreateLight(new Vector3(0,sceneBuildingBounds.center.y,0));
+//			CreateLight(new Vector3(4,sceneBuildingBounds.center.y,0));
+//		}
+//		GUILayout.FlexibleSpace();
+//		EditorGUILayout.EndHorizontal ();
+//		 
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.FlexibleSpace();
+//		if (GUILayout.Button (BLightIconOne, GUILayout.MaxWidth (35), GUILayout.MaxHeight (35))) 
+//		{
+//			Undo.RegisterSceneUndo ("Light4");
+//			CreateLightBlue(new Vector3(0,sceneBuildingBounds.center.y,0));
+//		}
+//		if (GUILayout.Button (BLightIconThree, GUILayout.MaxWidth (35), GUILayout.MaxHeight (35))) 
+//		{
+//			Undo.RegisterSceneUndo ("Light5");
+//			CreateLightBlue(new Vector3(-4,sceneBuildingBounds.center.y,0));
+//			CreateLightBlue(new Vector3(0,sceneBuildingBounds.center.y,0));
+//			CreateLightBlue(new Vector3(4,sceneBuildingBounds.center.y,0));
+//		}
+//		GUILayout.FlexibleSpace();
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		GUILayout.Space (20);
+//		
+//		// Automatic generation
+//		EditorGUILayout.BeginHorizontal();
+//		GUILayout.Space (20);
+//		EditorGUILayout.LabelField ("1.2 - Generación automática", EditorStyles.boldLabel);
+//		GUILayout.Space (20);
+//		EditorGUILayout.EndHorizontal ();
+//				
+//		GUILayout.Space(5);
+//		
+//		// Distance between lights
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.Space (40);
+//		EditorGUILayout.LabelField ("Distancia entre cada luz.", EditorStyles.wordWrappedLabel);
+//		GUILayout.Space (20);
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		GUILayout.Space(5);
+//		
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.FlexibleSpace();
+//		GUILayout.Space(20);
+//		lightDistance = EditorGUILayout.Slider(lightDistance, 3.0f, 20.0f, GUILayout.MaxWidth (1000));
+//		GUILayout.Space(20);
+//		GUILayout.FlexibleSpace();
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		GUILayout.Space (5);
+//		
+//		// Buttons for Automatic Light Generation
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.FlexibleSpace();
+//		
+//		if (GUILayout.Button (YLightIconFive, GUILayout.MaxWidth (35), GUILayout.MaxHeight (35))) 
+//		{
+//			Undo.RegisterSceneUndo ("Generate_Lights1");
+//			GenerateLights("ROCHE/Prefabs/YellowLight");
+//		}
+//		
+//		if (GUILayout.Button (BLightIconFive, GUILayout.MaxWidth (35), GUILayout.MaxHeight (35))) 
+//		{
+//			Undo.RegisterSceneUndo ("Generate_Lights2");
+//			GenerateLights("ROCHE/Prefabs/BlueLight");
+//		}
+//		
+//		GUILayout.FlexibleSpace();
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		GUILayout.Space(5);
+//		
+//		EditorGUILayout.BeginHorizontal();
+//		GUILayout.Space (20);
+//		EditorGUILayout.LabelField ("1.3 - Eliminar luces", EditorStyles.boldLabel);
+//		GUILayout.Space (20);
+//		EditorGUILayout.EndHorizontal ();
+//				
+//		GUILayout.Space(5);
+//		
+//		// Distance between lights
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.Space (40);
+//		EditorGUILayout.LabelField ("Eliminar todas las luces de la escena.", EditorStyles.wordWrappedLabel);
+//		GUILayout.Space (20);
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		GUILayout.Space(5);
+//		
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.FlexibleSpace();
+//		if (GUILayout.Button ("ELIMINAR", GUILayout.MaxWidth (80))) {
+//			Undo.RegisterSceneUndo ("Destroy_Lights");
+//			foreach (GameObject g in GameObject.FindObjectsOfType(typeof(GameObject))) if (g.layer == LayerMask.NameToLayer("ROCHE_LUZ"))
+//				DestroyImmediate (g);
+//		}
+//		GUILayout.FlexibleSpace();
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		GUILayout.Space (10);
+//		GUILayout.EndVertical ();
+//		
+//		// Lightmap generation
+//		EditorGUILayout.BeginVertical ("Box");
+//		EditorGUILayout.LabelField ("2- MAPAS DE ILUMINACIÓN", EditorStyles.boldLabel);
+//		GUILayout.Space(5);
+//		
+//		// Quality Level
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.Space (20);
+//		EditorGUILayout.LabelField ("Selecciona el nivel de calidad.", EditorStyles.wordWrappedLabel);
+//		GUILayout.Space (20);
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		GUILayout.Space(5);
+//		
+//		// Buttons for Lightmap Generation
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.FlexibleSpace();
+//		if (GUILayout.Button ("ALTO", GUILayout.MaxWidth (80))) {
+//			GameObject[] gs = GameObject.FindSceneObjectsOfType (typeof(GameObject)) as GameObject[];
+//			foreach (GameObject g in gs)
+//			{
+//				if (g.layer != LayerMask.NameToLayer("ROCHE")) g.isStatic = true;
+//			}
+//
+//			LightmapEditorSettings.bounces = 2;
+//            
+//			LightmapEditorSettings.finalGatherRays = 1000;
+//			LightmapEditorSettings.quality = LightmapBakeQuality.High;
+//			Lightmapping.BakeAsync ();
+//		}
+//		if (GUILayout.Button ("MEDIO", GUILayout.MaxWidth (80))) {
+//			GameObject[] gs = GameObject.FindSceneObjectsOfType (typeof(GameObject)) as GameObject[];
+//			foreach (GameObject g in gs)
+//			{
+//				if (g.layer != LayerMask.NameToLayer("ROCHE")) g.isStatic = true;
+//			}
+//			LightmapEditorSettings.bounceBoost = 1;
+//			LightmapEditorSettings.bounceIntensity = 1;
+//			LightmapEditorSettings.aoAmount = 0;
+//			LightmapEditorSettings.finalGatherInterpolationPoints = 15;
+//			LightmapEditorSettings.bounces = 1;
+//			LightmapEditorSettings.finalGatherRays = 550;
+//			LightmapEditorSettings.quality = LightmapBakeQuality.High;
+//			Lightmapping.BakeAsync ();
+//		}
+//		if (GUILayout.Button ("BAJO", GUILayout.MaxWidth (80))) {
+//			GameObject[] gs = GameObject.FindSceneObjectsOfType (typeof(GameObject)) as GameObject[];
+//			foreach (GameObject g in gs)
+//			{
+//				if (g.layer != LayerMask.NameToLayer("ROCHE")) g.isStatic = true;
+//			}
+//			LightmapEditorSettings.bounces = 1;
+//			LightmapEditorSettings.quality = LightmapBakeQuality.Low;
+//			LightmapEditorSettings.finalGatherRays = 400;
+//			Lightmapping.BakeAsync ();
+//		}
+//		GUILayout.FlexibleSpace();
+//		
+//		EditorGUILayout.EndHorizontal ();
+//		GUILayout.Space(5);
+//		GUILayout.EndVertical ();
+//		GUILayout.EndScrollView ();
+//	}
+//	
+//	// "Exportado" tab contents
+//	private void ExportTab ()
+//	{
+//		// Vertical Scrollbar
+//		scrollPos = GUILayout.BeginScrollView (scrollPos);
+//		
+//		// ROCHE Header Icon
+//		DrawRocheIconBox();	
+//		
+//		// "INFORMACIÓN" Box
+//		EditorGUILayout.BeginVertical ("Box");
+//		EditorGUILayout.LabelField ("1- INFORMACIÓN", EditorStyles.boldLabel);
+//		
+//		// Nº objetos
+//		#pragma warning disable 0219
+//		int numEdif = sceneBuilding.transform.childCount;
+//		int numMobi = furnitureContainer.transform.childCount;
+//		int numLuces = 0;
+//		GetNumGameObjects(lightContainer,ref numLuces);
+//
+//		int numSelected = 0;
+//		foreach (Transform g in Selection.transforms)
+//		{
+//			if (g.gameObject.layer == LayerMask.NameToLayer("ROCHE")) continue;
+//			numSelected++;
+//		}
+//		int numTotal = numEdif + numMobi + numLuces;		
+//		#pragma warning restore 0219
+//		
+//		EditorGUILayout.BeginHorizontal();
+//		GUILayout.Space(20);
+//		EditorGUILayout.LabelField ("Nº total de objetos:", EditorStyles.boldLabel);
+//		GUILayout.FlexibleSpace();
+//		EditorGUILayout.LabelField (numTotal.ToString(), EditorStyles.label, GUILayout.MinWidth(30));
+//		GUILayout.Space(20);
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		EditorGUILayout.BeginHorizontal();
+//		GUILayout.Space(20);
+//		EditorGUILayout.LabelField ("Nº de objetos de Edificio:", EditorStyles.boldLabel);
+//		GUILayout.FlexibleSpace();
+//		EditorGUILayout.LabelField (numEdif.ToString(), EditorStyles.label, GUILayout.MinWidth(30));
+//		GUILayout.Space(20);
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		EditorGUILayout.BeginHorizontal();
+//		GUILayout.Space(20);
+//		EditorGUILayout.LabelField ("Nº de objetos de Mobiliario:", EditorStyles.boldLabel);
+//		GUILayout.FlexibleSpace();
+//		EditorGUILayout.LabelField (numMobi.ToString(), EditorStyles.label, GUILayout.MinWidth(30));
+//		GUILayout.Space(20);
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		EditorGUILayout.BeginHorizontal();
+//		GUILayout.Space(20);
+//		EditorGUILayout.LabelField ("Nº de Luces:", EditorStyles.boldLabel);
+//		GUILayout.FlexibleSpace();
+//		EditorGUILayout.LabelField (numLuces.ToString(), EditorStyles.label, GUILayout.MinWidth(30));
+//		GUILayout.Space(20);
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		EditorGUILayout.BeginHorizontal();
+//		GUILayout.Space(20);
+//		EditorGUILayout.LabelField ("Nº de objetos seleccionados:", EditorStyles.boldLabel);
+//		GUILayout.FlexibleSpace();
+//		EditorGUILayout.LabelField (numSelected.ToString(), EditorStyles.label, GUILayout.MinWidth(30));
+//		GUILayout.Space(20);
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		GUILayout.Space(5);
+//				
+//		GUILayout.EndVertical();
+//		
+//		// Edit velocity values
+//		EditorGUILayout.BeginVertical ("Box");
+//		EditorGUILayout.LabelField ("2- CONTROL", EditorStyles.boldLabel);
+//		
+//		GameObject camS = GameObject.Find("CameraSystem") as GameObject;
+//		CameraOrbit orbit = camS.GetComponent<CameraOrbit>();
+//		
+//		EditorGUILayout.BeginHorizontal();
+//		GUILayout.Space(20);
+//		EditorGUILayout.LabelField ("Factor vuelo Orbit:", EditorStyles.boldLabel);
+//		GUILayout.FlexibleSpace();
+//		orbit.spanSpeed = Int32.Parse( EditorGUILayout.TextField (orbit.spanSpeed.ToString(), EditorStyles.numberField, GUILayout.MinWidth(30)));
+//		GUILayout.Space(20);
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		EditorGUILayout.BeginHorizontal();
+//		GUILayout.Space(20);
+//		EditorGUILayout.LabelField ("Factor giro eje X Orbit:", EditorStyles.boldLabel);
+//		GUILayout.FlexibleSpace();
+//		orbit.xSpeed = Int32.Parse(EditorGUILayout.TextField (orbit.xSpeed.ToString(), EditorStyles.numberField, GUILayout.MinWidth(30)));
+//		GUILayout.Space(20);
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		EditorGUILayout.BeginHorizontal();
+//		GUILayout.Space(20);
+//		EditorGUILayout.LabelField ("Factor giro eje Y Orbit:", EditorStyles.boldLabel);
+//		GUILayout.FlexibleSpace();
+//		orbit.ySpeed = Int32.Parse(EditorGUILayout.TextField (orbit.ySpeed.ToString(), EditorStyles.numberField, GUILayout.MinWidth(30)));
+//		GUILayout.Space(20);
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		EditorGUILayout.BeginHorizontal();
+//		GUILayout.Space(20);
+//		EditorGUILayout.LabelField ("Factor zoom Orbit:", EditorStyles.boldLabel);
+//		GUILayout.FlexibleSpace();
+//		orbit.speedZoom = Int32.Parse(EditorGUILayout.TextField (orbit.speedZoom.ToString(), EditorStyles.numberField, GUILayout.MinWidth(30)));
+//		GUILayout.Space(20);
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		EditorUtility.SetDirty(orbit);
+//		
+//		MouseLook mLook = camS.GetComponent<MouseLook>();
+//		
+//		EditorGUILayout.BeginHorizontal();
+//		GUILayout.Space(20);
+//		EditorGUILayout.LabelField ("Factor Giro X Walk:", EditorStyles.boldLabel);
+//		GUILayout.FlexibleSpace();
+//		mLook.sensitivityX = Int32.Parse(EditorGUILayout.TextField (mLook.sensitivityX.ToString(), EditorStyles.numberField, GUILayout.MinWidth(30)));
+//		GUILayout.Space(20);
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		EditorGUILayout.BeginHorizontal();
+//		GUILayout.Space(20);
+//		EditorGUILayout.LabelField ("Factor Giro Y Walk:", EditorStyles.boldLabel);
+//		GUILayout.FlexibleSpace();
+//		mLook.sensitivityY = Int32.Parse(EditorGUILayout.TextField (mLook.sensitivityY.ToString(), EditorStyles.numberField, GUILayout.MinWidth(30)));
+//		GUILayout.Space(20);
+//		EditorGUILayout.EndHorizontal ();
+//		EditorUtility.SetDirty(mLook);
+//		
+//		GUILayout.Space(5);
+//				
+//		GUILayout.EndVertical();
+//				
+//		EditorGUILayout.BeginVertical ("Box");
+//		EditorGUILayout.LabelField ("3- EXPORTAR", EditorStyles.boldLabel);
+//
+//		GUILayout.Space(5);
+//		
+//		// Export Build
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.FlexibleSpace();
+//		
+//		if (GUILayout.Button("Escritorio", GUILayout.Width(200)))
+//		{
+//			SetDefaultExportParams();
+//			GameObject r = GameObject.Find("_ROCHE") as GameObject;
+//			ROCHEScript rScript = r.GetComponent<ROCHEScript>();
+//			rScript.buildType = ROCHEScript.BuildType.Desktop;
+//			EditorUtility.SetDirty(rScript);
+//
+//			EditorApplication.SaveCurrentSceneIfUserWantsTo();
+//			
+//			EditorBuildSettingsScene[] scenes = EditorBuildSettings.scenes;
+//			EditorBuildSettingsScene[] newSettings = new EditorBuildSettingsScene[1]; 
+//			System.Array.Copy(scenes, newSettings, 0);
+//			EditorBuildSettingsScene sceneToAdd = new EditorBuildSettingsScene(EditorApplication.currentScene, true); 
+//			newSettings[0] = sceneToAdd;
+//			EditorBuildSettings.scenes = newSettings;
+//			
+//			string[] scenesToAdd = new string[1];
+//			scenesToAdd[0] = EditorApplication.currentScene;
+//			
+//			string exportPath = EditorUtility.SaveFolderPanel("Escoge la carpeta de destino", "", "");
+//			
+//			string finalPath = exportPath + "/ROCHE.exe";
+//
+//			Debug.Log("Exporting to: " + finalPath);
+//			BuildPipeline.BuildPlayer(scenesToAdd,finalPath ,BuildTarget.StandaloneWindows,BuildOptions.ShowBuiltPlayer);
+//			return;
+//		}
+//		GUILayout.FlexibleSpace();
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		GUILayout.Space(5);
+//		
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.FlexibleSpace();
+//		
+//		if (GUILayout.Button("Showroom", GUILayout.Width(200)))
+//		{
+//			SetDefaultExportParams();
+//			GameObject r = GameObject.Find("_ROCHE") as GameObject;
+//			ROCHEScript rScript = r.GetComponent<ROCHEScript>();
+//			rScript.buildType = ROCHEScript.BuildType.Kinect;
+//			EditorUtility.SetDirty(rScript);
+//
+//			string kinectPath = Application.dataPath + "Kinect/";
+//			kinectPath = kinectPath.Replace("Assets",""); 
+//			Debug.Log("Kinect Path = " + kinectPath);
+////			string kinectPath = EditorUtility.SaveFolderPanel("Escoge la localización del App Kinect", "", "");
+//			string exportPath = EditorUtility.SaveFolderPanel("Escoge la carpeta de destino", "", "");
+//			
+//			string finalPath = exportPath + "/ROCHE_Showroom.exe";
+//			
+//			EditorApplication.SaveCurrentSceneIfUserWantsTo();
+//			
+//			EditorBuildSettingsScene[] scenes = EditorBuildSettings.scenes;
+//			EditorBuildSettingsScene[] newSettings = new EditorBuildSettingsScene[1]; 
+//			System.Array.Copy(scenes, newSettings, 0);
+//			EditorBuildSettingsScene sceneToAdd = new EditorBuildSettingsScene(EditorApplication.currentScene, true); 
+//			newSettings[0] = sceneToAdd;
+//			EditorBuildSettings.scenes = newSettings;
+//			
+//			string[] scenesToAdd = new string[1];
+//			scenesToAdd[0] = EditorApplication.currentScene;
+//
+//			Debug.Log("Exporting to: " + finalPath);
+//			BuildPipeline.BuildPlayer(scenesToAdd,finalPath,BuildTarget.StandaloneWindows,BuildOptions.ShowBuiltPlayer);
+//
+//			FileUtil.CopyFileOrDirectory(kinectPath, exportPath + "/ROCHE_Showroom" + "_Data/Kinect");
+//			return;
+//		}
+//		GUILayout.FlexibleSpace();
+//		EditorGUILayout.EndHorizontal ();
+//		
+//		GUILayout.Space(5);
+//        GUILayout.BeginHorizontal();
+//        GUILayout.FlexibleSpace();
+//
+//        if (GUILayout.Button("Monotouch", GUILayout.Width(200)))
+//        {
+//			SetDefaultExportParams();
+//            GameObject r = GameObject.Find("_ROCHE") as GameObject;
+//            ROCHEScript rScript = r.GetComponent<ROCHEScript>();
+//            rScript.buildType = ROCHEScript.BuildType.Monotouch;
+//            EditorUtility.SetDirty(rScript);
+//
+//            EditorApplication.SaveCurrentSceneIfUserWantsTo();
+//
+//            EditorBuildSettingsScene[] scenes = EditorBuildSettings.scenes;
+//            EditorBuildSettingsScene[] newSettings = new EditorBuildSettingsScene[1];
+//            System.Array.Copy(scenes, newSettings, 0);
+//            EditorBuildSettingsScene sceneToAdd = new EditorBuildSettingsScene(EditorApplication.currentScene, true);
+//            newSettings[0] = sceneToAdd;
+//            EditorBuildSettings.scenes = newSettings;
+//
+//            string[] scenesToAdd = new string[1];
+//            scenesToAdd[0] = EditorApplication.currentScene;
+//
+//            string exportPath = EditorUtility.SaveFolderPanel("Escoge la carpeta de destino", "", "");
+//
+//            string finalPath = exportPath + "/ROCHE_Monotouch.exe";
+//
+//            Debug.Log("Exporting to: " + finalPath);
+//            BuildPipeline.BuildPlayer(scenesToAdd, finalPath, BuildTarget.StandaloneWindows, BuildOptions.ShowBuiltPlayer);
+//            return;
+//        }
+//        GUILayout.FlexibleSpace();
+//        EditorGUILayout.EndHorizontal();
+//        GUILayout.Space(5);
+//
+//		// Export Build
+//		GUILayout.BeginHorizontal ();
+//		GUILayout.FlexibleSpace();
+//		
+//		if (GUILayout.Button("Oculus Rift", GUILayout.Width(200)))
+//		{
+//			SetDefaultExportParams();
+//			PlayerSettings.defaultIsFullScreen = true;
+//			//PlayerSettings.displayResolutionDialog = ResolutionDialogSetting.Disabled;
+//			PlayerSettings.defaultScreenWidth = 1280;
+//			PlayerSettings.defaultScreenHeight = 800;
+//
+//			GameObject r = GameObject.Find("_ROCHE") as GameObject;
+//			ROCHEScript rScript = r.GetComponent<ROCHEScript>();
+//			rScript.buildType = ROCHEScript.BuildType.OVR;
+//			EditorUtility.SetDirty(rScript);
+//			
+//			EditorApplication.SaveCurrentSceneIfUserWantsTo();
+//			
+//			EditorBuildSettingsScene[] scenes = EditorBuildSettings.scenes;
+//			EditorBuildSettingsScene[] newSettings = new EditorBuildSettingsScene[1]; 
+//			System.Array.Copy(scenes, newSettings, 0);
+//			EditorBuildSettingsScene sceneToAdd = new EditorBuildSettingsScene(EditorApplication.currentScene, true); 
+//			newSettings[0] = sceneToAdd;
+//			EditorBuildSettings.scenes = newSettings;
+//			
+//			string[] scenesToAdd = new string[1];
+//			scenesToAdd[0] = EditorApplication.currentScene;
+//			
+//			string exportPath = EditorUtility.SaveFolderPanel("Escoge la carpeta de destino", "", "");
+//			
+//			string finalPath = exportPath + "/ROCHE_OVR.exe";
+//			
+//			Debug.Log("Exporting to: " + finalPath);
+//			BuildPipeline.BuildPlayer(scenesToAdd,finalPath ,BuildTarget.StandaloneWindows,BuildOptions.ShowBuiltPlayer);
+//			return;
+//		}
+//
+//		GUILayout.FlexibleSpace();
+//
+//		EditorGUILayout.EndHorizontal ();
+//		GUILayout.Space(5);
+//		GUILayout.EndVertical ();
+//		
+//		GUILayout.Space(30);
+//		
+//		EditorGUILayout.BeginVertical ("Box");
+//		EditorGUILayout.BeginHorizontal();
+//		GUILayout.Space (20);
+//		EditorGUILayout.LabelField("Para cualquier incidencia técnica enviar un e-mail a: info@mobilemediacontent.com", EditorStyles.wordWrappedLabel);
+//		GUILayout.Space (20);
+//		EditorGUILayout.EndHorizontal ();
+//
+//		GUILayout.EndVertical();
+//		GUILayout.EndScrollView();
+//	}
 	
 	/*
 	 * HELPER METHODS
@@ -1701,19 +2250,19 @@ public class ROCHE : EditorWindow
 		switch (axis) {
 		case 0:
 			foreach (Transform t in Selection.transforms) {
-				Undo.RegisterSceneUndo ("AlignX" + t.name);
+				Undo.RecordObject(t,t.name);
 				t.position = new Vector3 (active.x, t.position.y, t.position.z);
 			}
 			break;
 		case 1:
 			foreach (Transform t in Selection.transforms) {
-				Undo.RegisterSceneUndo ("AlignY" + t.name);
+				Undo.RecordObject(t,t.name);
 				t.position = new Vector3 (t.position.x, active.y, t.position.z);
 			}
 			break;
 		case 2:
 			foreach (Transform t in Selection.transforms) {
-				Undo.RegisterSceneUndo ("AlignZ" + t.name);
+				Undo.RecordObject(t,t.name);
 				t.position = new Vector3 (t.position.x, t.position.y, active.z);
 			}
 			break;
@@ -1724,7 +2273,7 @@ public class ROCHE : EditorWindow
 	private void ViewObjectCollisions()
 	{
 		// Disable view collisions if we are not at the Scene Inspector Tab
-		if (toolbarPos != TOOLBAR_POS.SCENE) viewCollisions = false;
+		if (toolbarPos != TOOLBAR_POS.APP) viewCollisions = false;
 		
 		// Draw collisions for current GameObject
 		// Get active object
@@ -1853,6 +2402,7 @@ public class ROCHE : EditorWindow
 	// Place a transform on the Building floor
 	private void PlaceOnFloor(Transform t, bool centerOnBuilding)
 	{
+		Undo.RecordObject(t,t.name);
 		// No building, just place on 0 0 0
 		if (sceneBuilding == null)
 		{
