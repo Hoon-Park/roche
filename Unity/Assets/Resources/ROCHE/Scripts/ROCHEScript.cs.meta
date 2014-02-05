@@ -1,9 +1,0 @@
-fileFormatVersion: 2
-guid: d96a33661e7636d4088a1101f359c50d
-MonoImporter:
-  serializedVersion: 2
-  defaultReferences:
-  - launchAnimation: {fileID: 100000, guid: 89665571d56838747983ec2b9adb067b, type: 2}
-  executionOrder: 0
-  icon: {instanceID: 0}
-  userData: 
